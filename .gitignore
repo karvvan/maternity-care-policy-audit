@@ -1,0 +1,8 @@
+# OS/편집기 임시 파일
+Thumbs.db
+desktop.ini
+~$*
+*.tmp
+
+# 로컬 실행 스크립트 (개인 환경용)
+Claude 시작.bat

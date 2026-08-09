@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>이동시간은 통과했지만, 의사는 없다 — 결과보고서</title>
+<style>
+  @page { size: A4; margin: 17mm 16mm 18mm 16mm; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: 'Malgun Gothic', '맑은 고딕', 'Apple SD Gothic Neo', sans-serif;
+    font-size: 9.6pt; line-height: 1.72; color: #1f2937;
+    word-break: keep-all;
+  }
+  /* ── 표지 ─────────────────────────────── */
+  .cover { page-break-after: always; padding-top: 34mm; }
+  .cover .comp { font-size: 10.5pt; color: #17456b; font-weight: 600; letter-spacing: .04em; }
+  .cover h1 { font-size: 25pt; line-height: 1.35; margin: 10mm 0 4mm; color: #0f2b44; }
+  .cover .sub { font-size: 12.5pt; color: #345; line-height: 1.55; margin-bottom: 14mm; }
+  .cover .rule { border: none; border-top: 3px solid #17456b; width: 42mm; margin: 0 0 12mm 0; }
+  .cover .meta { font-size: 10pt; color: #556; line-height: 2.0; }
+  .cover .keybox {
+    margin-top: 16mm; border-left: 4px solid #17456b; background: #f2f6fa;
+    padding: 5mm 6mm; font-size: 9.8pt; line-height: 1.9;
+  }
+  .cover .keybox b { color: #0f2b44; }
+  /* ── 본문 구조 ────────────────────────── */
+  h1.part {
+    page-break-before: always;
+    font-size: 15pt; color: #fff; background: #17456b;
+    padding: 4mm 5mm; margin: 0 0 7mm 0; border-radius: 2px;
+  }
+  h1.part .zh { font-weight: 400; opacity: .85; }
+  h2 {
+    font-size: 12.5pt; color: #0f2b44; margin: 9mm 0 3mm;
+    border-bottom: 2px solid #17456b; padding-bottom: 1.2mm;
+    page-break-after: avoid;
+  }
+  h3 {
+    font-size: 10.8pt; color: #17456b; margin: 6mm 0 2mm;
+    page-break-after: avoid;
+  }
+  p { margin: 1.6mm 0; }
+  ul, ol { margin: 1.5mm 0 2.5mm; padding-left: 6mm; }
+  li { margin: .8mm 0; }
+  strong { color: #0f2b44; }
+  code {
+    font-family: Consolas, 'Malgun Gothic', monospace; font-size: 8.8pt;
+    background: #eef1f5; padding: 0 .35em; border-radius: 2px;
+  }
+  /* ── 표 ───────────────────────────────── */
+  table {
+    border-collapse: collapse; width: 100%; margin: 2.5mm 0 3.5mm;
+    font-size: 8.8pt; page-break-inside: avoid;
+  }
+  th, td { border: .5pt solid #b9c4cf; padding: 1.4mm 2.2mm; vertical-align: top; }
+  th { background: #e6edf4; color: #0f2b44; font-weight: 700; text-align: center; }
+  td { background: #fff; }
+  tr:nth-child(even) td { background: #f7fafc; }
+  table.num td:not(:first-child) { text-align: right; }
+  table.cnum td { text-align: center; }
+  table.cnum td:first-child { text-align: left; }
+  td.hl, span.hl { color: #b91c1c; font-weight: 700; }
+  /* ── 박스류 ───────────────────────────── */
+  blockquote {
+    margin: 3mm 0; padding: 3mm 4.5mm;
+    border-left: 4px solid #17456b; background: #f2f6fa;
+    page-break-inside: avoid;
+  }
+  blockquote p { margin: 1mm 0; }
+  .rulebox {
+    font-family: Consolas, 'Malgun Gothic', monospace; font-size: 8.9pt;
+    background: #0f2b44; color: #e8eef5; border-radius: 3px;
+    padding: 3.5mm 5mm; line-height: 1.9; margin: 3mm 0;
+    white-space: pre; overflow-x: hidden; page-break-inside: avoid;
+  }
+  .note { font-size: 8.7pt; color: #667; margin-top: -2mm; }
+  .finding {
+    background: #fdf6ec; border: .6pt solid #e0c68a; border-radius: 3px;
+    padding: 3mm 4.5mm; margin: 3mm 0; page-break-inside: avoid;
+  }
+  .keep { page-break-inside: avoid; }
+  .toc-line { color: #345; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════ 표지 ═══════════ -->
+<div class="cover">
+  <div class="comp">2026 제5회 명지대학교 창의적 SW프로그램 경진대회 · 빅데이터 분석 부문 — 결과보고서</div>
+  <h1>이동시간은 통과했지만,<br>의사는 없다</h1>
+  <div class="sub">의료취약지 지정 제도의 사각지대 정량 탐지와<br>이중 트랙 지정 기준 제안</div>
+  <hr class="rule">
+  <div class="meta">
+    결과보고서 v1 · 2026. 8. 4.<br>
+    본분석 실측 완료판 — 모든 수치는 <code>03_분석/</code> 스크립트로 재현 가능
+  </div>
+  <div class="keybox">
+    <b>한 줄 요약.</b> 전국 의료취약지 지정 159곳 중 158곳(99.4%)이 이동시간 지표 2개만으로 재현된다.
+    제도는 "시간 안에 갈 수 있는가"만 물을 뿐 지역 안에 의사가 있는지는 보지 않으며,
+    그 결과 소아 입원 <b>5,689건 전량을 관외에 의존하는 5개 지역</b>이 "문제없음"으로 분류되어 있다.
+    본 연구는 이 사각지대를 3중 증거로 입증하고, 현행 기준을 유지한 채
+    <b>공급 공백형 트랙(유형 II)을 신설하는 이중 트랙 기준</b>을 제안한다.
+  </div>
+</div>
+
+<!-- ═══════════ 연구 요약 ═══════════ -->
+<h2 style="margin-top:0">연구 요약 (한 페이지)</h2>
+<table>
+  <tr><th style="width:14%">질문</th><td>의료취약지 지정 제도는 실제 의료 공백을 빠짐없이 포착하는가?</td></tr>
+  <tr><th>방법</th><td>제도의 <strong>역공학</strong>: 공개 데이터(226만 행)만으로 지정 규칙을 역산 → 규칙이 구조적으로 놓치는 지역을 3중 증거(공급·지표·행태)로 탐지 → 대안 기준을 시뮬레이션으로 검증</td></tr>
+  <tr><th>발견 1</th><td>전국 159개 지정 중 <strong>158개(99.4%)가 이동시간 파생 지표 2개만으로 재현</strong>된다 — 제도는 공급을 보지 않는다 (로지스틱 검증: 공급 변수 추가해도 AUC 변화 없음)</td></tr>
+  <tr><th>발견 2</th><td>거리 기준은 통과하지만 지역 내 공급이 사실상 없는 <strong>"공급 공백형 사각지대"</strong> 실재 — 소아 5곳·분만 8곳·투석 6곳 (전남 장성군은 3개 분야 동시 사각)</td></tr>
+  <tr><th>발견 3</th><td>사각지대 5곳의 소아 입원 <strong>5,689건 전량(100%)이 관외 유출</strong> — 중증 이송으로 설명되지 않음(동급 병·의원 유출도 전국 중앙값 이상)</td></tr>
+  <tr><th>발견 4</th><td>보상형 합산 지수로는 이들을 <strong>구조적으로 포착 불가</strong>(5곳 중 0~1곳) — "거리 정상" 점수가 "공급 부재"를 상쇄하기 때문</td></tr>
+  <tr><th>제안</th><td>현행 기준(유형 I)을 유지한 채 <strong>"공급 공백형"(유형 II) 트랙 신설</strong>: <code>[전문의 ≤ 지정지 중앙값 ∧ 관내의료이용률 ≤15%]</code> — 임계값 민감도 검증 완료, 단계 도입안 포함</td></tr>
+</table>
+<p class="toc-line"><strong>기승전결</strong>: 起 제도에 대한 의심(§1) → 承 이론·데이터·탐색(§2~4) → 轉 역공학과 사각지대 입증(§5~8) → 結 이중 트랙 제안(§9~11)</p>
+
+<!-- ═══════════ 제1부 ═══════════ -->
+<h1 class="part">제1부 · <span class="zh">起</span> — 문제의 제기</h1>
+
+<h2>1. 서론</h2>
+
+<h3>1.1. 취약지 지정은 "예산과 정책이 흐르는 수도꼭지"다</h3>
+<p>보건복지부는 「공공보건의료에 관한 법률」 제12조에 따라 의료 공급이 현저히 부족한 시군구를
+<strong>의료취약지</strong>로 지정·고시한다. 지정 지역에는 분만취약지 지원사업, 응급의료 취약지 지원 등
+국비 지원과 정책 개입이 집중된다. 즉 <strong>어느 지역이 지정되느냐가 곧 어느 지역이 지원받느냐를 결정</strong>한다.</p>
+<p>그렇다면 그 지정은 어떤 기준으로 이루어지는가. 그리고 그 기준은 실제 의료 공백을 빠짐없이 포착하는가.</p>
+
+<h3>1.2. 이미 제기된 의심 — 그러나 데이터 검증은 없었다</h3>
+<ul>
+  <li>2024년 8월 기준 지정 111개 의료취약지 중 <strong>106개(95.5%)가 소멸위험지역</strong>이다.
+      제도가 사실상 "인구가 적은 농어촌"만 포착하고 있다는 정황이다.</li>
+  <li>이동시간은 짧으나 실질 접근성이 낮은 지역이 애초에 배제된다는 지적이 언론·국회에서 반복돼 왔다.</li>
+  <li>그러나 이 지적들은 <strong>일화와 집계 수준</strong>에 머물러 있었다. 전국 단위 데이터로
+      "제도가 무엇을 놓치는지"를 정량 입증한 분석은 확인되지 않는다.</li>
+</ul>
+<p><strong>본 연구는 그 빈칸을 채운다.</strong> 분석 대상은 취약지라는 <em>현상</em>이 아니라, 취약지를 판정하는 <strong>제도 그 자체</strong>다.</p>
+
+<h3>1.3. 연구 질문</h3>
+<blockquote>
+  <p><strong>RQ1.</strong> 현행 의료취약지 지정은 실제로 어떤 변수로 결정되는가? — <em>제도의 역공학</em></p>
+  <p><strong>RQ2.</strong> 그 판정 규칙이 구조적으로 놓치는 지역(사각지대)이 실재하는가? — <em>탐지와 입증</em></p>
+  <p><strong>RQ3.</strong> 실재한다면, 어떤 보완 기준이 그 지역을 포착하는가? — <em>대안 설계와 검증</em></p>
+</blockquote>
+
+<!-- ═══════════ 제2부 ═══════════ -->
+<h1 class="part">제2부 · <span class="zh">承</span> — 이론, 데이터, 탐색</h1>
+
+<h2>2. 이론적 고찰</h2>
+
+<h3>2.1. 현행 지정 기준의 구조</h3>
+<p>국가법령정보센터 고시(응급의료분야 의료취약지 지정, 보건복지부 고시 제2024-261호 등)와
+국립중앙의료원 의료취약지 모니터링 체계에 따르면, 판정은 두 지표에 기초한다.</p>
+<table>
+  <tr><th style="width:22%">지표</th><th>정의</th><th style="width:16%">성격</th></tr>
+  <tr><td><strong>접근성취약인구비율</strong></td><td>기준시간(응급 30/60분, 분만·소아·투석 60분) 내 해당 의료기관에 <strong>도달 불가능한</strong> 인구 비율</td><td>이동시간 파생</td></tr>
+  <tr><td><strong>TRI (기준시간내의료이용률)</strong></td><td>기준시간 내에 해당 의료를 <strong>실제 이용한</strong> 비율 — <strong>관내·관외를 구분하지 않음</strong></td><td>이동시간 파생</td></tr>
+</table>
+<ul>
+  <li>응급: 접근성취약인구비율(30분 지역센터 또는 60분 권역센터) <strong>27% 이상</strong> — 접근성 단독</li>
+  <li>분만·소아청소년과·인공신장실: 접근성취약인구비율 <strong>30% 이상 AND TRI 30% 미만</strong></li>
+</ul>
+<p>본 연구는 이 기준을 문헌 인용에 그치지 않고 §5에서 <strong>데이터 역산으로 검증</strong>한다.</p>
+
+<h3>2.2. 이론적 프레임 — 수요·공급 괴리로서의 의료 사각지대</h3>
+<p>보건지리학의 표준 접근(2SFCA 등)은 의료 접근성을 <strong>공간적 접근성(거리·시간)</strong>과
+<strong>비공간적 접근성(공급량·수용력)</strong>의 결합으로 정의한다. 현행 제도는 이 중 <strong>전자만을</strong> 계측한다.
+본 연구의 가설은 이 비대칭에서 출발한다.</p>
+<blockquote>
+  <p><strong>가설</strong>: 이동시간 기준은 통과하지만(=인근 타 지역으로 "갈 수는 있음"),
+  지역 내 공급이 없어 주민이 상시 원정 진료에 의존하는 지역 —
+  <strong>"공급 공백형 취약지"</strong> — 이 제도 밖에 실재한다.</p>
+</blockquote>
+
+<h3>2.3. 선행 지적과의 차별점</h3>
+<table>
+  <tr><th style="width:46%">기존</th><th>본 연구</th></tr>
+  <tr><td>"취약지가 어디인가"를 찾는 분석 (정부·학계 다수)</td><td><strong>"취약지 판정 기준이 무엇을 놓치는가"</strong>를 분석</td></tr>
+  <tr><td>소멸위험지역 통계 등 집계 수준 문제 제기</td><td>판정 규칙의 <strong>결정론적 재현(99.4%)</strong> + 사각지대의 <strong>3중 증거 입증</strong></td></tr>
+  <tr><td>대안 부재 또는 추상적 제언</td><td>실패 사례(보상형 지수)까지 공개한 <strong>재지정 시뮬레이션 기반 이중 트랙 기준안</strong></td></tr>
+</table>
+
+<h2>3. 데이터 및 전처리</h2>
+
+<h3>3.1. 데이터 명세 — 단일 원천, 전량 공개</h3>
+<p>국립중앙의료원 헬스맵(HealthMap) 공공보건의료 통계 데이터셋
+(공공데이터포털 15154171, 기준연도 2023, 로그인·승인 불요)</p>
+<table class="num">
+  <tr><th>파일</th><th style="width:16%">행수</th><th style="width:44%">역할</th></tr>
+  <tr><td>의료취약지.csv</td><td>250</td><td style="text-align:left"><strong>정답 라벨 4분야</strong> + 판정 지표(접근성취약인구비율·TRI)</td></tr>
+  <tr><td>지역별 모니터링 지표.csv</td><td>337 (시군구 250)</td><td style="text-align:left"><strong>298개 지표</strong> — 공급·이용·인구·재정</td></tr>
+  <tr><td>유출입 6종 (진료과목·요양종별·시설·응급·질환·급성기)</td><td>2,187,500</td><td style="text-align:left">250×250 환자 이동 OD, <strong>입원 815만 건</strong></td></tr>
+  <tr><td>기관정보.csv</td><td>77,056</td><td style="text-align:left">전국 의료기관 종별·진료과목</td></tr>
+  <tr><td><strong>합계</strong></td><td><strong>2,265,143</strong></td><td></td></tr>
+</table>
+<p>보조 자료: 시군구 경계 GeoJSON(지도 시각화), 고시 원문(기준 인용).</p>
+
+<h3>3.2. 전처리 — 4단계 파이프라인</h3>
+<ol>
+  <li><strong>인코딩 정합</strong>: CP949/UTF-8-sig 혼재 → 파일별 자동 판별 로더</li>
+  <li><strong>키 정합화</strong>: 모니터링 지표의 지역코드(C 접두)와 취약지 시군구코드를 숫자 추출로 정합.
+      동명 지역(중구 6곳, 동구 5곳 등)이 있어 <strong>명칭 조인은 오류</strong> — 코드 조인으로 250/250 무손실 결합.
+      유출입 OD의 지역1·2도 숫자 코드로 통일 조인 (명칭 조인 시 전량 유실되는 함정 확인·기록)</li>
+  <li><strong>결측 감사</strong>: 298개 지표 전수 점검 → 259개 완전(결측 0), <code>치료가능사망률(OECD)</code> 등 2개 전면 결측,
+      <code>지역환자구성비</code> 계열 부분 결측(40~223/250) → <strong>분석 지표를 완전 계열로 한정</strong>, 배제 사유 기록</li>
+  <li><strong>분석 테이블</strong>: 시군구 250 × 4분야, 양성 라벨 159 (응급102·분만29·소아18·투석10)</li>
+</ol>
+<blockquote>
+  <p><strong>250행 관측치에 대한 방어</strong>: 원자료 226만 행이 시군구 피처로 집계된 구조다.
+  250은 표본이 아니라 <strong>시군구 전수(population)</strong>이며, 목적이 미지 지역 예측이 아니라
+  이미 내려진 판정의 규칙 규명(감사)이므로 표본 수 논리가 적용되지 않는다.</p>
+</blockquote>
+
+<h2>4. 탐색적 데이터 분석 (EDA)</h2>
+
+<h3>4.1. 지정 취약지의 프로파일 — "제도는 농어촌을 지정한다"</h3>
+<p>응급 취약지(102곳) vs 비취약지(148곳), 중앙값 비교:</p>
+<table class="num">
+  <tr><th>지표</th><th>비취약지</th><th>취약지</th><th>격차</th></tr>
+  <tr><td>인구수</td><td>277,749명</td><td>49,003명</td><td><strong>5.7배</strong></td></tr>
+  <tr><td>노인인구비율</td><td>17.8%</td><td>34.0%</td><td>1.9배</td></tr>
+  <tr><td>재정자립도</td><td>25.4</td><td>10.6</td><td><strong>2.4배</strong></td></tr>
+  <tr><td>면적당 의원 수</td><td>263.0</td><td>3.5</td><td><strong>74배</strong></td></tr>
+</table>
+<p>→ 언론이 지적한 <em>"지정 취약지의 95.5%가 소멸위험지역"</em> 구조가 본 데이터에서 그대로 재현된다.</p>
+
+<h3>4.2. 거리 기준 통과 지역 내부의 공급 격차 — 문제의 예고</h3>
+<p>접근성취약인구비율 ≤1%(제도상 "거리 문제 없음")인 시군구 내부의 전문의 공급 분포:</p>
+<table class="num">
+  <tr><th>분야</th><th>거리 통과</th><th>10%분위</th><th>중앙값</th><th>90%분위</th><th>최소~최대</th><th>격차</th></tr>
+  <tr><td>소아청소년과 전문의/10만</td><td>167곳</td><td>6.1</td><td>11.5</td><td>18.2</td><td>1.3 ~ 69.6</td><td><strong>54배</strong></td></tr>
+  <tr><td>산부인과 전문의/10만</td><td>154곳</td><td>5.1</td><td>10.4</td><td>18.9</td><td>0.6 ~ 55.0</td><td><strong>92배</strong></td></tr>
+</table>
+<p><strong>현행 제도는 이 지역들을 전부 "문제없음" 단일 범주로 분류한다.</strong> 그 안에 최대 92배의 공급 격차가 숨어 있다.</p>
+
+<h3>4.3. 분야 간 제도 강도 차이</h3>
+<p>지정률: <strong>응급 40.8% · 분만 11.6% · 소아 7.2% · 투석 4.0%</strong> —
+동일한 "취약지" 명칭 아래 분야별로 전혀 다른 포괄 범위가 운영된다. (§9 제언 4의 근거)</p>
+
+<h3>4.4. 도시의 역설 — 응급의료기관이 없는 대도시 자치구</h3>
+<p>응급의료기관 밀도가 0인 시군구는 <strong>32곳</strong>, 그중 8곳이 대도시권이다
+(서울 마포구·강북구, 부산 금정구·사하구·강서구, 용인 수지구, 하남시, 대구 달성군).
+이들의 응급실 관내이용률 중앙값은 <strong>0.0%</strong> — 다만 인접 자치구 대형병원 이용이 생활권 내 이동인
+도시 특성상, 농어촌형 공백과는 성격이 다르다(§6.4에서 구분 처리).</p>
+
+<!-- ═══════════ 제3부 ═══════════ -->
+<h1 class="part">제3부 · <span class="zh">轉</span> — 제도의 역공학과 사각지대의 입증</h1>
+
+<h2>5. 분석 I — 지정 규칙의 결정론적 재현 (RQ1)</h2>
+
+<h3>5.1. 역산 결과: 159곳 중 158곳(99.4%)이 두 지표로 재현된다</h3>
+<table class="cnum">
+  <tr><th>분야</th><th>검증 규칙</th><th>일치</th><th>오탐*</th><th>누락*</th></tr>
+  <tr><td>분만</td><td>접근성≥30 ∧ TRI&lt;30</td><td><strong>29/29</strong></td><td>0</td><td>0</td></tr>
+  <tr><td>인공신장실</td><td>접근성≥30 ∧ TRI&lt;30</td><td><strong>10/10</strong></td><td>0</td><td>0</td></tr>
+  <tr><td>소아청소년과</td><td>접근성≥30 ∧ TRI&lt;30</td><td><strong>18/18</strong></td><td>2</td><td>0</td></tr>
+  <tr><td>응급</td><td>30분≥27% ∨ 60분≥27%</td><td><strong>101/102</strong></td><td>1</td><td>1</td></tr>
+  <tr><td><strong>계</strong></td><td></td><td><strong>158/159 (99.4%)</strong></td><td></td><td></td></tr>
+</table>
+<p class="note">*오탐 = 규칙상 지정 대상인데 실제 미지정 / 누락 = 규칙 미충족인데 실제 지정</p>
+<blockquote><p>"제도가 이동시간만 본다"는 것은 추측이 아니라 <strong>역산으로 입증된 사실</strong>이다.</p></blockquote>
+
+<h3>5.2. 불일치 4건의 원인 조사 — 규칙 밖의 행정 재량</h3>
+<table>
+  <tr><th style="width:20%">사례</th><th style="width:38%">값</th><th>해석</th></tr>
+  <tr><td>완도군 (소아 오탐)</td><td>접근성 38.8, TRI 20.6 — 규칙 충족, 미지정</td><td>분만·응급은 지정. 임계값 인접 + 분야별 선별 단계 존재 시사</td></tr>
+  <tr><td>정선군 (소아 오탐)</td><td>접근성 53.4, TRI 0.0 — <strong>명백 충족</strong>, 미지정</td><td>분만·응급은 지정. 판정식 외 행정적 선별(사업 규모 등) 추정</td></tr>
+  <tr><td>안성시 (응급 누락)</td><td>30분 19.0 / 60분 6.0 — 미충족, 지정</td><td>과거 지정의 유지(레거시) 추정</td></tr>
+  <tr><td>이천시 (응급 오탐)</td><td>60분 32.7 — 충족, 미지정</td><td>갱신 시차 추정</td></tr>
+</table>
+<p>→ 판정식이 99.4%를 설명하고, 나머지 0.6%는 지정·해제의 <strong>행정 시차</strong>로 설명 가능하다.
+이 자체가 "지정이 데이터 기반 상시 갱신이 아니다"라는 부수 발견이다.</p>
+
+<h3>5.3. 공급 변수의 기여도 검증 (로지스틱 회귀, 5-fold 층화 교차검증)</h3>
+<table class="cnum">
+  <tr><th>분야</th><th>모형</th><th>CV AUC</th><th>비고</th></tr>
+  <tr><td>소아</td><td>접근성+TRI (2변수)</td><td><strong>1.0000 (±0.0000)</strong></td><td>완전 판별</td></tr>
+  <tr><td>소아</td><td>+전문의+관내이용률 (4변수)</td><td>0.9989 (±0.0022)</td><td>개선 없음 (공급 계수 −0.41, 미미)</td></tr>
+  <tr><td>분만</td><td>접근성+TRI (2변수)</td><td>0.9992 (±0.0015)</td><td>사실상 완전 판별</td></tr>
+  <tr><td>분만</td><td>+전문의+관내이용률 (4변수)</td><td>1.0000 (±0.0000)</td><td>공급 계수 +0.11 — 방향성 없음</td></tr>
+</table>
+<p>이동시간 지표 2개만으로 판별이 사실상 완결되며, <strong>공급·이용 변수는 지정과 통계적으로 무관</strong>하다.
+직접 확인: 거리 통과 지역 중 소아과 공급 최하위 15곳의 지정 → <strong>0곳/15곳</strong>.</p>
+
+<h2>6. 분석 II — 사각지대 탐지: 3중 기준, 4분야 (RQ2)</h2>
+
+<h3>6.1. 판정 기준 (투명성 원칙: 모든 임계값은 데이터 내부에서 도출)</h3>
+<div class="rulebox">[거리 통과]  접근성취약인구비율 ≤ 1%          → 현행 제도상 "문제없음"
+[공급 공백]  전문의 수 ≤ 공식 지정지 중앙값     → 지정 지역과 같거나 더 나쁜 공급
+[이용 공백]  관내의료이용률 ≤ 15%              → 주민 대부분이 관외 이용
+[미지정]     해당 분야 취약지 아님</div>
+
+<h3>6.2. 소아청소년과 — 핵심 사각지대 5곳</h3>
+<p>지정지 18곳의 전문의 중앙값 = 5.4명/10만. 3중 기준을 모두 충족하는 미지정 지역:</p>
+<table class="num">
+  <tr><th>지역</th><th>전문의/10만</th><th>접근성취약%</th><th>TRI%</th><th>관내이용률%</th><th>인구</th></tr>
+  <tr><td>충남 예산군</td><td class="hl">1.3</td><td>0.57</td><td>11.7</td><td class="hl">0.0</td><td>78,354</td></tr>
+  <tr><td>경남 함안군</td><td>1.7</td><td>0.12</td><td>88.2</td><td class="hl">0.0</td><td>60,203</td></tr>
+  <tr><td>전남 장성군</td><td>2.4</td><td>0.00</td><td>78.1</td><td class="hl">0.0</td><td>42,543</td></tr>
+  <tr><td>충북 증평군</td><td>2.7</td><td>0.00</td><td>75.7</td><td class="hl">0.0</td><td>37,484</td></tr>
+  <tr><td>전남 담양군</td><td>4.4</td><td>0.67</td><td>90.1</td><td class="hl">0.0</td><td>45,373</td></tr>
+</table>
+<ul>
+  <li>5곳의 전문의 중앙값 <strong>2.4</strong> — 공식 취약지 중앙값 5.4보다도 <strong>낮다</strong></li>
+  <li>TRI는 75~90% — "60분 안에 (타 지역으로) 갈 수 있으므로" 제도상 정상</li>
+  <li>관내이용률 전부 <strong>0.0%</strong> — 지역 안에서 소아 입원이 사실상 불가능</li>
+</ul>
+
+<h3>6.3. 분만 — 사각지대 8곳, 그리고 "도시형" 유형의 발견</h3>
+<p>지정지 29곳의 산부인과 전문의 중앙값 = 4.3명/10만:</p>
+<table class="num">
+  <tr><th>지역</th><th>전문의/10만</th><th>접근성취약%</th><th>TRI%</th><th>분만실 관내이용률%</th><th>인구</th></tr>
+  <tr><td>경기 의왕시</td><td class="hl">0.6</td><td>0.0</td><td>93.0</td><td>0.0</td><td>158,870</td></tr>
+  <tr><td>충남 계룡시</td><td>2.1</td><td>0.0</td><td>81.0</td><td>0.0</td><td>46,667</td></tr>
+  <tr><td>전남 장성군</td><td>2.4</td><td>0.0</td><td>77.4</td><td>0.0</td><td>42,543</td></tr>
+  <tr><td>울산 울주군</td><td>2.7</td><td>0.4</td><td>81.4</td><td>0.0</td><td>218,997</td></tr>
+  <tr><td>경기 광주시</td><td>3.1</td><td>0.6</td><td>84.0</td><td>1.3</td><td>391,377</td></tr>
+  <tr><td>울산 북구</td><td>3.2</td><td>0.0</td><td>94.8</td><td>0.0</td><td>216,477</td></tr>
+  <tr><td>경북 예천군</td><td>3.6</td><td>0.0</td><td>39.5</td><td>9.7</td><td>55,325</td></tr>
+  <tr><td>경기 과천시</td><td>3.7</td><td>0.0</td><td>90.6</td><td>0.0</td><td>81,000</td></tr>
+</table>
+<p>주목할 점: <strong>인구 39만의 경기 광주시, 22만의 울주군·울산 북구</strong>가 포함된다.
+분만 사각지대는 농어촌만의 문제가 아니라 <strong>대도시 인접 위성도시</strong>에서도 발생한다
+(다만 위성도시의 원정은 통근 생활권 내 이동일 수 있어 §7.3에서 해석을 구분한다).</p>
+
+<h3>6.4. 투석·응급 — 분야별 성격 차이</h3>
+<ul>
+  <li><strong>투석(인공신장실)</strong>: 모니터링 지표에 공급 컬럼이 없어 2중 기준(거리 통과 ∧ 관내이용률≤15% ∧ 미지정)
+      적용 → 후보 <strong>6곳</strong> (대구 달성군, 과천, 계룡, 칠곡, <strong>장성</strong>, 의왕). 공급 축 부재는 한계로 명시(§10).</li>
+  <li><strong>응급</strong>: 거리 통과 ∧ 기관 밀도 ≤ 지정지 중앙값 ∧ 관내이용률≤25% → 후보 16곳.
+      단, 대부분 대도시 자치구(§4.4)로 <strong>인접 구 이용이 정상 행태</strong>일 수 있어,
+      응급 분야는 사각지대 "확정"이 아닌 "성격이 다른 공백"으로 분리 보고한다.
+      — 분야를 기계적으로 동일 처리하지 않는 것이 본 분석의 정밀성이다.</li>
+</ul>
+
+<div class="finding keep">
+<h3 style="margin-top:0">6.5. 교차 발견 — 전남 장성군, 3개 분야 동시 사각지대</h3>
+<p style="margin-bottom:0">장성군은 소아·분만·투석 세 분야에서 모두 3중(2중) 기준을 충족하면서 어느 분야에서도 지정되지 않았다.
+인구 4.3만의 이 지역은 광주광역시 인접이라는 이유만으로 제도의 시야에서 완전히 사라져 있다.</p>
+</div>
+
+<h3>6.6. 배제 메커니즘의 규명 — TRI의 정의가 만드는 구조적 맹점</h3>
+<p>이 지역들이 걸러진 이유는 정확히 <strong>TRI의 정의</strong>에 있다. TRI는 "기준시간 내 이용"을 관내·관외
+구분 없이 집계한다. 따라서 <strong>원정 진료가 가능하기만 하면 취약하지 않다고 판정한다.</strong>
+제도의 질문("갈 수 있는가")과 주민의 현실("지역에 의사가 있는가")이 여기서 갈라진다.</p>
+
+<h2>7. 분석 III — 유출 네트워크 검증: "실제로 전원 원정을 간다" (RQ2 강화)</h2>
+<p>사각지대 판정이 지표 조합의 인공물이 아닌지, <strong>독립 파일(유출입 OD 행렬, 입원 815만 건)</strong>로 검증했다.</p>
+
+<h3>7.1. 소아 핵심 5곳의 입원 유출 — 전량 관외</h3>
+<p>전국 소아과 유출률 중앙값 74.1% 대비:</p>
+<table class="num">
+  <tr><th>지역</th><th>유출률</th><th>총 입원</th><th style="width:44%">주요 행선지 (건수)</th></tr>
+  <tr><td>예산군</td><td class="hl">100.0%</td><td>746건</td><td style="text-align:left">아산시(356) · 천안 동남구(106) · 홍성군(60)</td></tr>
+  <tr><td>함안군</td><td class="hl">100.0%</td><td>1,750건</td><td style="text-align:left">창원 마산회원구(1,422) · 의창구(106) · 마산합포구(93)</td></tr>
+  <tr><td>장성군</td><td class="hl">100.0%</td><td>1,251건</td><td style="text-align:left">광주 광산구(823) · 북구(164) · 남구(75)</td></tr>
+  <tr><td>증평군</td><td class="hl">100.0%</td><td>692건</td><td style="text-align:left">청주 청원구(288) · 흥덕구(132) · 서원구(90)</td></tr>
+  <tr><td>담양군</td><td class="hl">100.0%</td><td>1,250건</td><td style="text-align:left">광주 북구(638) · 광산구(255) · 남구(114)</td></tr>
+</table>
+<blockquote>
+  <p><strong>5개 지역, 소아 입원 5,689건 — 단 한 건도 관내에서 이루어지지 않았다.</strong><br>
+  지표(관내이용률 0%)와 행태(유출 100%)가 <strong>서로 다른 파일에서 독립적으로 일치</strong>한다.</p>
+</blockquote>
+
+<h3>7.2. "중증 이송 아니냐"는 반론의 통제 — 요양종별 동급 유출 분리</h3>
+<p>입원 유출은 중증 환자의 상급종합병원 이송(정상 행태)일 수 있다. 이를 통제하기 위해
+요양종별 OD로 <strong>동급(의원+병원+종합병원) 입원만 분리</strong>했다 (전 진료과 합산 기준):</p>
+<table class="num">
+  <tr><th>지역</th><th>동급 유출률</th><th>동급 총건수</th><th>상급종합 유출률</th></tr>
+  <tr><td>전국 중앙값</td><td>63.4%</td><td>—</td><td>—</td></tr>
+  <tr><td>예산군</td><td>67.4%</td><td>18,505건</td><td>100%</td></tr>
+  <tr><td>함안군</td><td>76.6%</td><td>18,873건</td><td>100%</td></tr>
+  <tr><td>장성군</td><td>67.6%</td><td>18,827건</td><td>100%</td></tr>
+  <tr><td>증평군</td><td class="hl">96.9%</td><td>7,568건</td><td>100%</td></tr>
+  <tr><td>담양군</td><td class="hl">86.1%</td><td>14,800건</td><td>100%</td></tr>
+</table>
+<p>상급 이송이 필요 없는 <strong>동급 병·의원 입원조차 5곳 모두 전국 중앙값 이상으로 유출</strong>된다.
+"중증이라 나간다"로는 설명되지 않는, 공급 부재발(發) 유출이다.</p>
+
+<h3>7.3. 분만 사각지대의 유출 — 그리고 생활권 해석의 구분</h3>
+<p>전국 산부인과 유출률 중앙값 자체가 90.3%로 높다(분만 인프라의 광역화). 그 위에서도:</p>
+<ul>
+  <li>군 지역형: 장성군 97.3%(→광주), 예천군 94.2%(→안동·대구) — 수십 km 원정</li>
+  <li>위성도시형: 의왕 100%(→안양·군포), 과천 100%(→강남·안양), 광주시 99.0%(→분당) — 통근 생활권 내 이동</li>
+</ul>
+<p><strong>같은 "유출 100%"라도 부담의 성격이 다르다.</strong> 본 연구는 위성도시형을 사각지대 후보로 보고하되,
+지정 판단에는 생활권 보정(행선지 거리·연접성)이 필요함을 명시한다 — 이 구분 자체가
+단일 지표 판정의 위험성을 보여주는 사례다.</p>
+
+<h2>8. 분석 IV — 대안 기준 설계: 실패한 설계와 채택한 설계 (RQ3)</h2>
+
+<h3>8.1. 시도 1: 보상형 합산 지수 — 기각</h3>
+<p>접근성·TRI·공급·관내이용률을 표준화 합산한 단일 지수로 상위 38곳(현행 18+후보 20 규모)을
+재지정하는 시뮬레이션 (소아):</p>
+<table class="cnum">
+  <tr><th>설계</th><th>현행 유지</th><th>핵심 5곳 포착</th></tr>
+  <tr><td>v0: 4변수 합산 (TRI 포함)</td><td>17/18</td><td><strong>1/5</strong></td></tr>
+  <tr><td>v1: 3변수 합산 (TRI 제외)</td><td>17/18</td><td><strong>0/5</strong></td></tr>
+</table>
+<p><strong>실패 원인이 그 자체로 발견이다</strong>: 합산(보상형) 구조에서는 사각지대 지역의
+"거리 정상" 속성이 "공급 부재"를 <strong>상쇄</strong>한다. 거리축 점수가 바닥이므로 아무리 공급이 없어도
+종합 순위가 오르지 못한다. — <em>현행 제도를 지수로 개량하는 방식으로는 사각지대를 구조적으로 포착할 수 없다.</em></p>
+<p>(부산물: 지수 상위 미지정 20곳 — 정선·고성·태안·부안 등 — 은 접근성 25~50%로 지정 문턱에 걸린
+<strong>차상위 준취약지</strong>다. §9 제언 3의 모니터링 명단이 된다.)</p>
+
+<h3>8.2. 시도 2: 이중 트랙(비보상형) 기준 — 채택</h3>
+<p>취약의 두 유형은 서로 다른 질문이므로 <strong>서로 다른 트랙</strong>으로 판정해야 한다.</p>
+<div class="rulebox">유형 I  · 거리 취약  (현행 유지)   접근성취약인구비율 ≥30% ∧ TRI &lt;30%
+유형 II · 공급 공백  (신설 제안)   전문의 ≤ 유형I 지정지 중앙값 ∧ 관내의료이용률 ≤15%
+                                  (거리 조건 없음 — 보상 불가능한 독립 트랙)</div>
+<p><strong>적용 결과</strong> (기존 지정 지역은 전원 유지, 유형 II는 신규만):</p>
+<table class="cnum">
+  <tr><th>분야</th><th>유형 II 신규</th><th>내부 구성</th><th>관내이용률 0%</th></tr>
+  <tr><td>소아</td><td>37곳</td><td>완전 사각(거리 통과) <strong>5곳</strong> + 거리 경계(1~30%) 32곳</td><td>26곳</td></tr>
+  <tr><td>분만</td><td>34곳</td><td>완전 사각 <strong>8곳</strong> + 거리 경계 26곳</td><td>32곳</td></tr>
+</table>
+
+<h3>8.3. 임계값 민감도 — 채택안은 우연이 아니다</h3>
+<p>유형 II 임계값(소아: 전문의 s, 관내이용률 l)을 스윕한 결과. 괄호는 핵심 5곳 포착 수:</p>
+<table class="cnum">
+  <tr><th></th><th>l=10%</th><th>l=15%</th><th>l=20%</th><th>l=25%</th></tr>
+  <tr><td>s=4.0</td><td>22 (4/5)</td><td>24 (4/5)</td><td>25 (4/5)</td><td>25 (4/5)</td></tr>
+  <tr><td>s=4.5</td><td>27 (5/5)</td><td>29 (5/5)</td><td>31 (5/5)</td><td>32 (5/5)</td></tr>
+  <tr><td>s=5.0</td><td>31 (5/5)</td><td>33 (5/5)</td><td>36 (5/5)</td><td>37 (5/5)</td></tr>
+  <tr><td><strong>s=5.4 (채택)</strong></td><td>33 (5/5)</td><td><strong>37 (5/5)</strong></td><td>40 (5/5)</td><td>41 (5/5)</td></tr>
+  <tr><td>s=6.0</td><td>37 (5/5)</td><td>43 (5/5)</td><td>46 (5/5)</td><td>48 (5/5)</td></tr>
+  <tr><td>s=7.0</td><td>44 (5/5)</td><td>51 (5/5)</td><td>56 (5/5)</td><td>59 (5/5)</td></tr>
+</table>
+<ul>
+  <li><strong>s≥4.5의 모든 조합에서 핵심 5곳이 전부 포착</strong>된다 — 결과가 임계값 선택에 민감하지 않다</li>
+  <li>s=4.0에서 이탈하는 1곳은 담양(전문의 4.4)뿐 — 경계 사례까지 식별됨</li>
+  <li>신규 지정 규모는 22~59곳 범위에서 임계값으로 조절 가능 — <strong>재정 규모에 맞춘 단계 도입이 가능한 설계</strong></li>
+</ul>
+
+<h3>8.4. 단계 도입안</h3>
+<table>
+  <tr><th style="width:18%">단계</th><th>대상</th><th style="width:22%">규모 (소아+분만)</th></tr>
+  <tr><td>1단계 (즉시)</td><td>완전 사각: 거리 통과인데 3중 기준 충족 — 현행 제도가 <strong>원리적으로 볼 수 없는</strong> 지역</td><td>5+8 = <strong>12곳</strong> (장성 중복 제외)</td></tr>
+  <tr><td>2단계 (순차)</td><td>거리 경계(접근성 1~30%) + 관내이용률 0% 지역</td><td>임계값으로 규모 조절</td></tr>
+  <tr><td>상시</td><td>차상위 준취약지 모니터링 명단 (지수 상위 20곳)</td><td>지정 아님, 감시 대상</td></tr>
+</table>
+<blockquote>
+  <p>제안의 형태: 고시 판정식의 <em>교체</em>가 아니라 <strong>제2 유형의 신설</strong>.
+  기존 수혜 지역을 건드리지 않아 정책 수용성이 높고, 이진 규칙이므로 현행 고시 형식과 호환되며,
+  임계값이 "지정지 중앙값"이라는 <strong>데이터 내부 기준</strong>이어서 자의성 시비가 적다.</p>
+</blockquote>
+
+<!-- ═══════════ 제4부 ═══════════ -->
+<h1 class="part">제4부 · <span class="zh">結</span> — 제안과 결론</h1>
+
+<h2>9. 정책 제언 — 각 제언은 본문 표 하나에 직접 대응한다</h2>
+<ol>
+  <li><strong>"공급 공백형 의료취약지"(유형 II) 신설</strong> <code>[전문의 ≤ 지정지 중앙값 ∧ 관내의료이용률 ≤15%]</code><br>
+      — 근거: §6 사각지대 표, §8.2 적용 결과, §8.3 민감도</li>
+  <li><strong>TRI 산정에 관내/관외 구분 병기</strong> — 원정 의존을 "이용 가능"으로 집계하는 정의상 왜곡 해소<br>
+      — 근거: §6.6 배제 메커니즘</li>
+  <li><strong>차상위 준취약지 모니터링 명단 운영</strong> (정선·고성·태안 등 20곳) — 지정 문턱 이탈 감시<br>
+      — 근거: §8.1 부산물</li>
+  <li><strong>지정·해제의 데이터 기반 상시 갱신</strong> — 규칙 불일치 4건(완도·정선·안성·이천)이 보여주는 행정 시차 해소<br>
+      — 근거: §5.2</li>
+  <li><strong>분야 간 지정률 격차(40.8% vs 4.0%)의 기준 정합성 재검토</strong> — 근거: §4.3</li>
+</ol>
+
+<h2>10. 연구의 한계</h2>
+<ol>
+  <li><strong>횡단면 자료</strong>: 기준연도 2023 단일 시점 — 지정 변동의 동태 분석은 범위 외</li>
+  <li><strong>시군구 해상도</strong>: 읍면동 수준의 미시 공백은 포착 불가</li>
+  <li><strong>입원 중심 OD</strong>: 외래 이용 행태 미반영 — 소아과는 외래 접근성이 별도 문제일 수 있음</li>
+  <li><strong>투석 분야 공급 축 부재</strong>: 데이터셋에 인공신장실 공급 컬럼이 없어 2중 기준만 적용</li>
+  <li><strong>임계값의 규범성</strong>: 유형 II 임계값은 데이터 내부 기준(지정지 중앙값)으로 도출한 제안값 —
+      민감도로 안정성은 입증했으나(§8.3) 최종 수치는 정책 판단의 몫</li>
+  <li><strong>위성도시 해석</strong>: 도시형 후보(의왕·과천 등)는 생활권 보정 없이는 지정 판단 불가(§7.3) —
+      행선지 연접성 가중치가 후속 과제</li>
+</ol>
+
+<h2>11. 결론</h2>
+<p>현행 의료취약지 지정 제도를 데이터로 역산한 결과, <strong>지정 159곳 중 158곳(99.4%)이
+이동시간 파생 지표 2개만으로 재현</strong>되었다. 제도는 "시간 안에 갈 수 있는가"만을 물으며,
+지역 내 공급과 원정 의존 여부는 판정에 반영되지 않는다(공급 변수 추가 시 AUC 변화 없음).</p>
+<p>그 결과, 전문의 공급이 공식 취약지보다 낮으면서(소아 중앙값 2.4 vs 5.4) 소아 입원의
+<strong>100%(5,689건 전량)를 타 지역에 의존하는 5개 지역</strong>이 "문제없음"으로 분류되어 있다.
+이 공백은 소아만의 문제가 아니다 — 분만 8곳(도시형 포함), 투석 6곳이 같은 구조로 배제되며,
+<strong>전남 장성군은 3개 분야에서 동시에</strong> 제도 밖에 있다.</p>
+<p>보상형 지수 개량으로는 이들이 구조적으로 포착되지 않음을 시뮬레이션으로 보였고(5곳 중 0~1곳),
+현행 기준을 유지하면서 <strong>공급 공백형 트랙을 신설하는 이중 트랙 기준</strong>을 제안했다.
+임계값 민감도 전 구간에서 결과가 안정적이며, 단계 도입으로 재정 부담도 조절 가능하다.</p>
+<p>의료취약지 제도의 목적이 "의료가 부족한 곳을 찾는 것"이라면, 판정식에는 이동시간만이 아니라
+<strong>공급의 실재</strong>가 들어가야 한다. 본 연구는 그 개정의 근거 수치와 구체적 판정식을
+<strong>공개 데이터만으로, 전 과정 재현 가능하게</strong> 제시했다.</p>
+
+<h2>부록</h2>
+
+<h3>A. 재현성</h3>
+<ul>
+  <li>전 데이터 공개 출처: 공공데이터포털 15154171 (국립중앙의료원 헬스맵) — 승인·로그인 불요</li>
+  <li>소스코드: <code>03_분석/main_01_본분석.py</code>, <code>main_02_보완.py</code> (+ 파일럿 <code>03_분석/pilot/</code>)</li>
+  <li>실행 로그: <code>03_분석/본분석_결과로그.txt</code>, <code>본분석_보완로그.txt</code> — 본문 모든 수치의 원본</li>
+  <li>전처리 판단 기록: 결측 배제 지표 목록, 코드 조인 채택 사유(동명 지역), OD 숫자 코드 함정</li>
+</ul>
+
+<h3>B. 평가 기준 대응표</h3>
+<table>
+  <tr><th style="width:36%">평가 항목 (배점)</th><th>본 보고서 대응</th></tr>
+  <tr><td>계획 수립 및 이론적 고찰 (30)</td><td>§1 문제 제기·RQ, §2 고시 기준 구조·접근성 이론·차별점</td></tr>
+  <tr><td>데이터 수집·전처리·EDA (30)</td><td>§3 226만 행 명세·4단계 전처리·결측 감사, §4 EDA 4종</td></tr>
+  <tr><td>데이터 분석 (20)</td><td>§5 역공학(99.4%)·로지스틱 CV, §6 4분야 탐지, §7 OD 3중 검증, §8 시뮬레이션·민감도</td></tr>
+  <tr><td>창의성 및 완성도 (20)</td><td>"제도 역공학" 프레임, 실패 설계의 공개(§8.1), 이중 트랙 제안, 전 과정 재현 가능성</td></tr>
+</table>
+
+<h3>C. 데이터 윤리</h3>
+<p>집계·통계 데이터만 사용, 개인 식별 정보 없음. 공공누리 출처 표기.</p>
+
+<h3>D. 후속 산출물 (제출물 연계)</h3>
+<ul>
+  <li>인터랙티브 지도: 현행 지정 vs 사각지대 vs 유형 II 적용 비교 (시연 영상 클라이맥스)</li>
+  <li>계획서 PPT: 본 보고서 §1~§3 + 분석 설계(§5~§8)의 계획형 재구성</li>
+  <li>결과보고서 PPT: 본 보고서의 시각화 압축본</li>
+</ul>
+
+</body>
+</html>
