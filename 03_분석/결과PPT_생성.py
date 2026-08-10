@@ -16,7 +16,7 @@ from ppt_helpers import (new_deck, text_block, rect, card, header as _header, ta
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FIG = os.path.join(BASE, '04_제출물', '그림')
-OUT = os.path.join(BASE, '04_제출물', '데이터분석_결과보고서.pptx')
+OUT = os.environ.get('PPTX_OUT') or os.path.join(BASE, '04_제출물', '데이터분석_결과보고서.pptx')
 
 prs, BLANK = new_deck()
 LABEL = '데이터 분석 결과보고서'
@@ -33,21 +33,22 @@ def slide():
 # ── 1. 표지 ─────────────────────────────────────────────────
 s = slide()
 bg(s, 'title')
-deco(s, 'ring_blue', 10.05, 0.55, 2.95)
-deco(s, 'sphere_coral', 10.75, 2.25, 2.35)
-deco(s, 'sphere_teal', 9.55, 5.0, 0.95)
-deco(s, 'sphere_blue', 0.35, 5.9, 1.15)
+deco(s, 'korea_map', 9.0, 0.85, 3.7)
+deco(s, 'icon_pin', 10.35, 1.35, 0.62)
+deco(s, 'sphere_coral', 8.35, 4.55, 1.75)
+deco(s, 'ring_blue', 11.55, 4.9, 1.75)
+deco(s, 'sphere_teal', 8.15, 0.75, 0.72)
 accent_chip(s, 1.0, 1.32, 0.55, 0.14)
-text_block(s, 1.0, 1.62, 9.0, 3.1, [
-    ('데이터 분석 결과보고서', 14.5, False, RGBColor(0xA9, 0xC0, 0xDA), 15),
-    ('측정과 배분 사이', 47, True, WHITE, 8),
-    ('— 분만취약지 제도의 전 과정 데이터 감사와 우선순위 모형', 19, False, RGBColor(0xD8, 0xE2, 0xEC), 0),
+text_block(s, 1.0, 1.62, 8.0, 3.1, [
+    ('데이터 분석 결과보고서', 14.5, False, GRAY, 15),
+    ('측정과 배분 사이', 47, True, DARK, 8),
+    ('— 분만취약지 제도의 전 과정 데이터 감사와 우선순위 모형', 19, False, NAVY, 0),
 ])
 glow(s, 1.02, 4.78, 6.4)
-text_block(s, 1.0, 5.1, 8.9, 1.7, [
-    ('2026 제5회 명지대학교 창의적 SW프로그램 경진대회 · 빅데이터 분석 부문', 13.5, True, WHITE, 6),
-    ('정부는 분만취약지를 정밀하게 측정한다. 그러나 지정 규칙은 이동시간만 보고,', 12.5, False, RGBColor(0xB9, 0xC8, 0xD6), 2),
-    ('배분은 그 측정값조차 따르지 않는다 — 두 개의 공백을 정부 자신의 데이터로 메운다.', 12.5, False, RGBColor(0xB9, 0xC8, 0xD6), 0),
+text_block(s, 1.0, 5.1, 7.6, 1.7, [
+    ('2026 제5회 명지대학교 창의적 SW프로그램 경진대회 · 빅데이터 분석 부문', 13.5, True, DARK, 6),
+    ('정부는 분만취약지를 정밀하게 측정한다. 그러나 지정 규칙은 이동시간만 보고,', 12.5, False, GRAY, 2),
+    ('배분은 그 측정값조차 따르지 않는다 — 두 개의 공백을 정부 자신의 데이터로 메운다.', 12.5, False, GRAY, 0),
 ])
 
 # ── 2. 연구 요약 ────────────────────────────────────────────
@@ -335,19 +336,20 @@ text_block(s, 0.55, 5.35, 12.3, 1.0, [
 # ── 19. 결론 ────────────────────────────────────────────────
 s = slide()
 bg(s, 'closing')
-deco(s, 'ring_coral', 10.6, 4.4, 2.3)
-deco(s, 'sphere_blue', 12.0, 1.0, 1.0)
-text_block(s, 1.0, 0.95, 11.3, 0.9, [('결론', 26, True, WHITE, 0)])
+deco(s, 'ring_coral', 10.6, 4.35, 2.3)
+deco(s, 'sphere_blue', 11.95, 0.85, 1.05)
+deco(s, 'icon_med', 10.75, 2.6, 0.75)
+text_block(s, 1.0, 0.95, 11.3, 0.9, [('결론', 26, True, DARK, 0)])
 glow(s, 1.02, 2.1, 5.2)
-text_block(s, 1.0, 2.5, 10.6, 2.6, [
-    ('현행 배분은 취약의 깊이를 반영한다.', 22, True, WHITE, 6),
-    ('다만 그 취약을 겪는 인원의 규모는 반영하지 않는다.', 22, True, WHITE, 6),
-    ('우리는 정부 자신의 기준으로 그 축을 하나 추가했다.', 22, True, RGBColor(0xF0, 0xB4, 0xA8), 0),
+text_block(s, 1.0, 2.5, 10.0, 2.6, [
+    ('현행 배분은 취약의 깊이를 반영한다.', 22, True, DARK, 6),
+    ('다만 그 취약을 겪는 인원의 규모는 반영하지 않는다.', 22, True, DARK, 6),
+    ('우리는 정부 자신의 기준으로 그 축을 하나 추가했다.', 22, True, RED, 0),
 ])
 text_block(s, 1.0, 5.3, 11.3, 1.6, [
-    ('지정 단계: 판정식 99.4% 검증 + 공급 공백형 사각지대의 다중 증거', 13, False, RGBColor(0xB9, 0xC8, 0xD6), 4),
-    ('배분 단계: 선정의 대부분이 공개 지표 밖 + 심도-부담 이원 우선순위·유형 배정 모형과 표 산출물', 13, False, RGBColor(0xB9, 0xC8, 0xD6), 4),
-    ('심도와 부담 중 무엇을 우선할지는 사회의 선택이다 — 본 연구의 기여는 그 선택을 명시적으로 만든 것이다.', 13, True, WHITE, 0),
+    ('지정 단계: 판정식 99.4% 검증 + 공급 공백형 사각지대의 다중 증거', 13, False, GRAY, 4),
+    ('배분 단계: 선정의 대부분이 공개 지표 밖 + 심도-부담 이원 우선순위·유형 배정 모형과 표 산출물', 13, False, GRAY, 4),
+    ('심도와 부담 중 무엇을 우선할지는 사회의 선택이다 — 본 연구의 기여는 그 선택을 명시적으로 만든 것이다.', 13, True, NAVY, 0),
 ])
 
 prs.save(OUT)

@@ -15,7 +15,7 @@ from ppt_helpers import (new_deck, text_block, rect, card, header as _header, ta
 
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-OUT = os.path.join(BASE, '04_제출물', '데이터분석_계획서.pptx')
+OUT = os.environ.get('PPTX_OUT') or os.path.join(BASE, '04_제출물', '데이터분석_계획서.pptx')
 
 prs, BLANK = new_deck()
 LABEL = '데이터 분석 계획서'
@@ -32,21 +32,22 @@ def slide():
 # ── 1. 표지 ─────────────────────────────────────────────────
 s = slide()
 bg(s, 'title')
-deco(s, 'ring_blue', 10.05, 0.55, 2.95)
-deco(s, 'sphere_coral', 10.75, 2.25, 2.35)
-deco(s, 'sphere_teal', 9.55, 5.0, 0.95)
-deco(s, 'sphere_blue', 0.35, 5.9, 1.15)
+deco(s, 'korea_map', 9.0, 0.85, 3.7)
+deco(s, 'icon_pin', 10.35, 1.35, 0.62)
+deco(s, 'sphere_coral', 8.35, 4.55, 1.75)
+deco(s, 'ring_blue', 11.55, 4.9, 1.75)
+deco(s, 'sphere_teal', 8.15, 0.75, 0.72)
 accent_chip(s, 1.0, 1.32, 0.55, 0.14)
-text_block(s, 1.0, 1.62, 9.0, 3.1, [
-    ('데이터 분석 계획서', 14.5, False, RGBColor(0xA9, 0xC0, 0xDA), 15),
-    ('측정과 배분 사이', 47, True, WHITE, 8),
-    ('— 분만취약지 제도의 전 과정 데이터 감사와 우선순위 모형', 19, False, RGBColor(0xD8, 0xE2, 0xEC), 0),
+text_block(s, 1.0, 1.62, 8.0, 3.1, [
+    ('데이터 분석 계획서', 14.5, False, GRAY, 15),
+    ('측정과 배분 사이', 47, True, DARK, 8),
+    ('— 분만취약지 제도의 전 과정 데이터 감사와 우선순위 모형', 19, False, NAVY, 0),
 ])
 glow(s, 1.02, 4.78, 6.4)
-text_block(s, 1.0, 5.1, 8.9, 1.7, [
-    ('2026 제5회 명지대학교 창의적 SW프로그램 경진대회 · 빅데이터 분석 부문', 13.5, True, WHITE, 6),
-    ('정부는 취약지를 정밀하게 측정한다. 지정 규칙과 배분 규칙은 그 측정을 따르는가 —', 12.5, False, RGBColor(0xB9, 0xC8, 0xD6), 2),
-    ('정부 자신의 공개 데이터와 기준만으로 제도의 전 과정을 감사한다.', 12.5, False, RGBColor(0xB9, 0xC8, 0xD6), 0),
+text_block(s, 1.0, 5.1, 7.6, 1.7, [
+    ('2026 제5회 명지대학교 창의적 SW프로그램 경진대회 · 빅데이터 분석 부문', 13.5, True, DARK, 6),
+    ('정부는 취약지를 정밀하게 측정한다. 지정 규칙과 배분 규칙은 그 측정을 따르는가 —', 12.5, False, GRAY, 2),
+    ('정부 자신의 공개 데이터와 기준만으로 제도의 전 과정을 감사한다.', 12.5, False, GRAY, 0),
 ])
 
 # ── 2. 문제 인식 ────────────────────────────────────────────
