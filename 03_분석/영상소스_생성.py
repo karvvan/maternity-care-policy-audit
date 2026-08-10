@@ -440,7 +440,7 @@ def c51(ax, t, sec, st):
         rng = np.random.default_rng(3)
         st['ord'] = rng.permutation(len(st['df']))
     df = st['df']
-    title_bar(ax, '취약의 "깊이"와 "인원 규모"는 다른 지도를 그린다', 'A·B 53곳 · Spearman ρ = −0.190')
+    title_bar(ax, '취약의 "깊이"와 "인원 규모"는 다른 지도를 그린다', 'A·B 53곳 · Spearman ρ = -0.190')
     x0, y0, w, h = 36, 18, 120, 64
     card_box(ax, x0, y0, w, h)
     ax.text(x0 + w / 2, y0 - 4.5, '심도 순위 S → (1위가 왼쪽)', fontsize=12.5, color=MUT, ha='center', zorder=5)
@@ -465,7 +465,7 @@ def c51(ax, t, sec, st):
                     alpha=a, zorder=7)
     a2 = ease(seg(t, 0.82, 0.95))
     if a2 > 0:
-        ax.text(96, 8.5, '상관 −0.190 — 어느 축을 보느냐가 순위를 실제로 바꾼다 · 그래서 합성하지 않고 병렬 제시한다',
+        ax.text(96, 8.5, '상관 -0.190 — 어느 축을 보느냐가 순위를 실제로 바꾼다 · 그래서 합성하지 않고 병렬 제시한다',
                 fontsize=15.5, fontweight='bold', color=TXT, ha='center', alpha=a2, zorder=7)
 
 

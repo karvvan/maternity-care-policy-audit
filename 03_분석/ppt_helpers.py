@@ -246,7 +246,7 @@ def table(slide, x, y, w, rows, widths=None, header_size=11.5, body_size=11, row
             r = p.add_run(); r.text = val
             if i == 0:
                 set_font(r, header_size, True, WHITE)
-                cell_fill(cell, '1B3A5F')
+                cell_fill(cell, '33393F')   # 무채색 차콜 헤더
             elif i in highlight_rows:
                 set_font(r, body_size, True, RED if highlight_color is None else highlight_color)
                 cell_fill(cell, 'FFEDE6')
