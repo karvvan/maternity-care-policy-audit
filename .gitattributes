@@ -1,0 +1,2 @@
+# git 훅은 sh 로 실행되므로 줄바꿈이 CRLF 면 Windows 에서 동작하지 않는다. LF 로 고정.
+.githooks/** text eol=lf
