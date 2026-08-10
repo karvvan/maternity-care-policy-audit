@@ -10,7 +10,8 @@ from pptx.util import Inches, Pt
 from pptx.dml.color import RGBColor
 from pptx.enum.text import MSO_ANCHOR
 from ppt_helpers import (new_deck, text_block, rect, card, header as _header, table, picture,
-                         NAVY, DARK, RED, GRAY, LIGHT, LINE, WHITE, REDBG)
+                         bg, deco, glow, accent_chip,
+                         NAVY, DARK, RED, GRAY, LIGHT, LINE, WHITE, REDBG, TEAL, BLUE)
 
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -31,15 +32,20 @@ def slide():
 
 # ── 1. 표지 ─────────────────────────────────────────────────
 s = slide()
-rect(s, 0, 0, 13.333, 7.5, DARK)
-rect(s, 0, 4.62, 13.333, 0.06, RED)
-text_block(s, 1.0, 1.45, 11.3, 3.1, [
-    ('데이터 분석 결과보고서', 15, False, RGBColor(0x9F, 0xB8, 0xCC), 16),
-    ('측정과 배분 사이', 44, True, WHITE, 8),
-    ('— 분만취약지 제도의 전 과정 데이터 감사와 우선순위 모형', 20, False, RGBColor(0xD8, 0xE2, 0xEC), 0),
+bg(s, 'title')
+deco(s, 'ring_blue', 10.05, 0.55, 2.95)
+deco(s, 'sphere_coral', 10.75, 2.25, 2.35)
+deco(s, 'sphere_teal', 9.55, 5.0, 0.95)
+deco(s, 'sphere_blue', 0.35, 5.9, 1.15)
+accent_chip(s, 1.0, 1.32, 0.55, 0.14)
+text_block(s, 1.0, 1.62, 9.0, 3.1, [
+    ('데이터 분석 결과보고서', 14.5, False, RGBColor(0xA9, 0xC0, 0xDA), 15),
+    ('측정과 배분 사이', 47, True, WHITE, 8),
+    ('— 분만취약지 제도의 전 과정 데이터 감사와 우선순위 모형', 19, False, RGBColor(0xD8, 0xE2, 0xEC), 0),
 ])
-text_block(s, 1.0, 5.0, 11.3, 1.6, [
-    ('2026 제5회 명지대학교 창의적 SW프로그램 경진대회 · 빅데이터 분석 부문', 14, True, WHITE, 6),
+glow(s, 1.02, 4.78, 6.4)
+text_block(s, 1.0, 5.1, 8.9, 1.7, [
+    ('2026 제5회 명지대학교 창의적 SW프로그램 경진대회 · 빅데이터 분석 부문', 13.5, True, WHITE, 6),
     ('정부는 분만취약지를 정밀하게 측정한다. 그러나 지정 규칙은 이동시간만 보고,', 12.5, False, RGBColor(0xB9, 0xC8, 0xD6), 2),
     ('배분은 그 측정값조차 따르지 않는다 — 두 개의 공백을 정부 자신의 데이터로 메운다.', 12.5, False, RGBColor(0xB9, 0xC8, 0xD6), 0),
 ])
@@ -53,9 +59,9 @@ finds = [
     ('발견 3 · 배분 규칙은 데이터 밖에 있다', '실질 취약지 A·B 53곳 중 21곳만 기지원. A등급 지원 오즈는 B의 4.82배(p=0.021)인데, 그 선정은 공개 지표로 16% 남짓만 설명된다(McFadden R² 0.163)', RED, REDBG),
     ('발견 4 · 깊이는 보지만 인원 수는 안 본다', '현행 배분은 취약 심도와는 정렬(ρ=+0.381), 영향 인원 규모(부담)와는 무관(ρ=−0.131). 두 관점의 순위 상관은 −0.190 — 축의 선택이 결과를 바꾼다', NAVY, LIGHT),
 ]
-for i, (t, b, tc, bg) in enumerate(finds):
+for i, (t, b, tc, cfill) in enumerate(finds):
     x, y = 0.55 + (i % 2) * 6.3, 1.35 + (i // 2) * 2.35
-    card(s, x, y, 6.05, 2.1, t, [b], fill=bg, tcolor=tc, bsize=11.5)
+    card(s, x, y, 6.05, 2.1, t, [b], fill=cfill, tcolor=tc, bsize=11.5)
 text_block(s, 0.55, 6.15, 12.3, 0.6, [
     ('데이터: 헬스맵 공공 데이터셋 9종(2023, 226만 행) + 복지부 공고·지침 — 전량 공개 자료, 전 수치 독립 재실행 검증 완료', 12, True, DARK, 0)])
 
@@ -93,11 +99,11 @@ table(s, 0.55, 1.35, 12.35, [
     ['기준시간내 의료이용률(TRI)', '실제 분만 중 거주지→기관 이동시간 60분 내에 이뤄진 비율 — 건보 청구 DB', '행태 실측값'],
 ], widths=[3.1, 7.3, 1.95], row_h=0.5)
 text_block(s, 0.55, 3.15, 12.3, 0.4, [('TRI에 관한 세 가지 사실 (오해 정리)', 14, True, NAVY, 0)])
-for i, (t, b, tc, bg) in enumerate([
+for i, (t, b, tc, cfill) in enumerate([
     ('① 대기시간 무관', '병원 안 대기시간이 아니라 거주지에서 기관까지의 이동시간 기준', NAVY, LIGHT),
     ('② "이내" 이용 비율', '60분 이내 이용의 비율 — 높을수록 양호, 30% 미만이면 취약', NAVY, LIGHT),
     ('③ 관내/관외 무구분', '옆 도시 병원이라도 60분 안이면 "이용됨" — 본 연구 지정 감사의 핵심 열쇠', RED, REDBG)]):
-    card(s, 0.55 + i * 4.2, 3.6, 3.95, 1.75, t, [b], fill=bg, tcolor=tc, bsize=11)
+    card(s, 0.55 + i * 4.2, 3.95, 3.95, 1.6, t, [b], fill=cfill, tcolor=tc, bsize=11)
 card(s, 0.55, 5.6, 12.35, 1.25, '두 지표를 동시에 쓰는 이유 (AND 이중검증)', [
     '접근성만 보면 지도 계산 오차로, TRI만 보면 "선호 원정"과 "못 감"의 혼동으로 오판 — 둘 다 나쁠 때만 취약으로 판정한다', ])
 
@@ -328,10 +334,12 @@ text_block(s, 0.55, 5.35, 12.3, 1.0, [
 
 # ── 19. 결론 ────────────────────────────────────────────────
 s = slide()
-rect(s, 0, 0, 13.333, 7.5, DARK)
-rect(s, 0, 2.1, 13.333, 0.05, RED)
+bg(s, 'closing')
+deco(s, 'ring_coral', 10.6, 4.4, 2.3)
+deco(s, 'sphere_blue', 12.0, 1.0, 1.0)
 text_block(s, 1.0, 0.95, 11.3, 0.9, [('결론', 26, True, WHITE, 0)])
-text_block(s, 1.0, 2.5, 11.3, 2.6, [
+glow(s, 1.02, 2.1, 5.2)
+text_block(s, 1.0, 2.5, 10.6, 2.6, [
     ('현행 배분은 취약의 깊이를 반영한다.', 22, True, WHITE, 6),
     ('다만 그 취약을 겪는 인원의 규모는 반영하지 않는다.', 22, True, WHITE, 6),
     ('우리는 정부 자신의 기준으로 그 축을 하나 추가했다.', 22, True, RGBColor(0xF0, 0xB4, 0xA8), 0),

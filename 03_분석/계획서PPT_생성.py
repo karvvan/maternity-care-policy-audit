@@ -1,198 +1,112 @@
 # -*- coding: utf-8 -*-
 """
-데이터 분석 계획서 PPT 생성 (제출물)
+데이터 분석 계획서 PPT 생성 (제출물) — 다크 '오로라' 테마 (ppt_helpers v2)
 
 원칙: 계획서는 미래형으로 쓴다 — 분석 '설계'만 담고 결과 수치는 넣지 않는다.
 출력: 04_제출물/데이터분석_계획서.pptx (16:9, 12장)
 """
 import os, sys, io
-from pptx import Presentation
-from pptx.util import Inches, Pt, Emu
+from pptx.util import Inches, Pt
 from pptx.dml.color import RGBColor
-from pptx.enum.text import PP_ALIGN, MSO_ANCHOR
-from pptx.enum.shapes import MSO_SHAPE
-from pptx.oxml.ns import qn
+from pptx.enum.text import MSO_ANCHOR
+from ppt_helpers import (new_deck, text_block, rect, card, header as _header, table,
+                         bg, deco, glow, accent_chip,
+                         NAVY, DARK, RED, GRAY, LIGHT, WHITE, REDBG)
 
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
-
-NAVY = RGBColor(0x17, 0x45, 0x6B)
-DARK = RGBColor(0x0F, 0x2B, 0x44)
-RED = RGBColor(0xC0, 0x39, 0x2B)
-GRAY = RGBColor(0x55, 0x5F, 0x6B)
-LIGHT = RGBColor(0xF2, 0xF6, 0xFA)
-LINE = RGBColor(0xB9, 0xC4, 0xCF)
-WHITE = RGBColor(0xFF, 0xFF, 0xFF)
-FONT = '맑은 고딕'
-
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(BASE, '04_제출물', '데이터분석_계획서.pptx')
 
-prs = Presentation()
-prs.slide_width = Inches(13.333)
-prs.slide_height = Inches(7.5)
-BLANK = prs.slide_layouts[6]
+prs, BLANK = new_deck()
+LABEL = '데이터 분석 계획서'
 
 
-def set_font(run, size, bold=False, color=DARK):
-    f = run.font
-    f.size, f.bold, f.name = Pt(size), bold, FONT
-    f.color.rgb = color
-    # 한글(East Asian) 서체 명시
-    rPr = run._r.get_or_add_rPr()
-    ea = rPr.find(qn('a:ea'))
-    if ea is None:
-        ea = rPr.makeelement(qn('a:ea'), {})
-        rPr.append(ea)
-    ea.set('typeface', FONT)
+def header(s, no, title, sub=None):
+    _header(s, no, title, LABEL, sub)
 
 
-def text_block(slide, x, y, w, h, items, anchor=MSO_ANCHOR.TOP):
-    """items: (텍스트, 크기, 굵게, 색, 단락 뒤 간격pt) 튜플 목록. 줄 안 '|' 뒤는 굵게."""
-    tb = slide.shapes.add_textbox(Inches(x), Inches(y), Inches(w), Inches(h))
-    tf = tb.text_frame
-    tf.word_wrap = True
-    tf.vertical_anchor = anchor
-    for i, (t, size, bold, color, after) in enumerate(items):
-        p = tf.paragraphs[0] if i == 0 else tf.add_paragraph()
-        p.space_after = Pt(after)
-        p.line_spacing = 1.12
-        r = p.add_run(); r.text = t
-        set_font(r, size, bold, color)
-        if t.startswith('• '):          # 줄바꿈 시 불릿 아래로 내어쓰기
-            pPr = p._p.get_or_add_pPr()
-            pPr.set('marL', '160020'); pPr.set('indent', '-160020')
-    return tb
-
-
-def rect(slide, x, y, w, h, fill, line_color=None, shadow=False):
-    sp = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(x), Inches(y), Inches(w), Inches(h))
-    sp.adjustments[0] = 0.06
-    sp.fill.solid(); sp.fill.fore_color.rgb = fill
-    if line_color is None:
-        sp.line.fill.background()
-    else:
-        sp.line.color.rgb = line_color; sp.line.width = Pt(1)
-    sp.shadow.inherit = False
-    return sp
-
-
-def card(slide, x, y, w, h, title, body, fill=LIGHT, tcolor=NAVY, tsize=13, bsize=11.5):
-    rect(slide, x, y, w, h, fill, LINE)
-    items = [(title, tsize, True, tcolor, 3)]
-    for line in body:
-        items.append((line if line.startswith(('→', '—')) else '• ' + line, bsize, False, DARK, 2))
-    text_block(slide, x + 0.15, y + 0.1, w - 0.3, h - 0.2, items)
-
-
-def header(slide, no, title, sub=None):
-    rect(slide, 0, 0, 13.333, 0.92, NAVY)
-    text_block(slide, 0.55, 0.13, 11.2, 0.7,
-               [(title, 22, True, WHITE, 0)], anchor=MSO_ANCHOR.MIDDLE)
-    text_block(slide, 12.35, 0.2, 0.8, 0.55, [(f'{no:02d}', 16, True, RGBColor(0x9F, 0xB8, 0xCC), 0)])
-    if sub:
-        text_block(slide, 0.55, 1.02, 12.3, 0.42, [(sub, 12.5, False, GRAY, 0)])
-    text_block(slide, 0.55, 7.08, 12.3, 0.35,
-               [('2026 제5회 명지대학교 창의적 SW프로그램 경진대회 · 빅데이터 분석 부문 — 데이터 분석 계획서', 9, False, RGBColor(0x9A, 0xA5, 0xB1), 0)])
-
-
-def table(slide, x, y, w, rows, widths=None, header_size=11.5, body_size=11, row_h=0.42):
-    shape = slide.shapes.add_table(len(rows), len(rows[0]), Inches(x), Inches(y), Inches(w), Inches(row_h * len(rows)))
-    tbl = shape.table
-    if widths:
-        for j, wd in enumerate(widths):
-            tbl.columns[j].width = Inches(wd)
-    for i, row in enumerate(rows):
-        for j, val in enumerate(row):
-            cell = tbl.cell(i, j)
-            cell.margin_top = cell.margin_bottom = Emu(27432)  # 0.03in
-            cell.margin_left = cell.margin_right = Emu(64008)
-            cell.vertical_anchor = MSO_ANCHOR.MIDDLE
-            p = cell.text_frame.paragraphs[0]
-            p.line_spacing = 1.05
-            r = p.add_run(); r.text = val
-            if i == 0:
-                set_font(r, header_size, True, WHITE)
-                cell.fill.solid(); cell.fill.fore_color.rgb = NAVY
-            else:
-                set_font(r, body_size, False, DARK)
-                cell.fill.solid()
-                cell.fill.fore_color.rgb = WHITE if i % 2 == 1 else RGBColor(0xF7, 0xFA, 0xFC)
-    return tbl
+def slide():
+    return prs.slides.add_slide(BLANK)
 
 
 # ── 1. 표지 ─────────────────────────────────────────────────
-s = prs.slides.add_slide(BLANK)
-rect(s, 0, 0, 13.333, 7.5, DARK)
-rect(s, 0, 4.62, 13.333, 0.06, RED)
-text_block(s, 1.0, 1.45, 11.3, 3.1, [
-    ('데이터 분석 계획서', 15, False, RGBColor(0x9F, 0xB8, 0xCC), 16),
-    ('측정과 배분 사이', 44, True, WHITE, 8),
-    ('— 분만취약지 제도의 전 과정 데이터 감사와 우선순위 모형', 20, False, RGBColor(0xD8, 0xE2, 0xEC), 0),
+s = slide()
+bg(s, 'title')
+deco(s, 'ring_blue', 10.05, 0.55, 2.95)
+deco(s, 'sphere_coral', 10.75, 2.25, 2.35)
+deco(s, 'sphere_teal', 9.55, 5.0, 0.95)
+deco(s, 'sphere_blue', 0.35, 5.9, 1.15)
+accent_chip(s, 1.0, 1.32, 0.55, 0.14)
+text_block(s, 1.0, 1.62, 9.0, 3.1, [
+    ('데이터 분석 계획서', 14.5, False, RGBColor(0xA9, 0xC0, 0xDA), 15),
+    ('측정과 배분 사이', 47, True, WHITE, 8),
+    ('— 분만취약지 제도의 전 과정 데이터 감사와 우선순위 모형', 19, False, RGBColor(0xD8, 0xE2, 0xEC), 0),
 ])
-text_block(s, 1.0, 5.0, 11.3, 1.6, [
-    ('2026 제5회 명지대학교 창의적 SW프로그램 경진대회 · 빅데이터 분석 부문', 14, True, WHITE, 6),
+glow(s, 1.02, 4.78, 6.4)
+text_block(s, 1.0, 5.1, 8.9, 1.7, [
+    ('2026 제5회 명지대학교 창의적 SW프로그램 경진대회 · 빅데이터 분석 부문', 13.5, True, WHITE, 6),
     ('정부는 취약지를 정밀하게 측정한다. 지정 규칙과 배분 규칙은 그 측정을 따르는가 —', 12.5, False, RGBColor(0xB9, 0xC8, 0xD6), 2),
     ('정부 자신의 공개 데이터와 기준만으로 제도의 전 과정을 감사한다.', 12.5, False, RGBColor(0xB9, 0xC8, 0xD6), 0),
 ])
 
 # ── 2. 문제 인식 ────────────────────────────────────────────
-s = prs.slides.add_slide(BLANK)
+s = slide()
 header(s, 2, '문제 인식 — 취약지 정책은 세 단계 파이프라인이다')
 labels = [('① 측정', '2년마다 전국 시·군의\n접근성·의료이용률 산출'),
           ('② 지정', '측정값으로 취약지 판정\n(등급 부여)'),
           ('③ 배분', '지정 지역 병원에\n시설·운영비 지원')]
 for i, (t, b) in enumerate(labels):
     x = 0.55 + i * 4.35
-    rect(s, x, 1.35, 3.6, 1.25, LIGHT, LINE)
-    text_block(s, x + 0.15, 1.45, 3.3, 1.05,
+    rect(s, x, 1.5, 3.6, 1.25, LIGHT)
+    text_block(s, x + 0.18, 1.6, 3.3, 1.05,
                [(t, 15, True, NAVY, 3)] + [(line, 11.5, False, DARK, 0) for line in b.split('\n')])
     if i < 2:
-        text_block(s, x + 3.62, 1.7, 0.75, 0.6, [('→', 22, True, GRAY, 0)])
-card(s, 0.55, 2.95, 6.05, 1.95, '의심 1 — 지정 단계', [
+        text_block(s, x + 3.62, 1.85, 0.75, 0.6, [('→', 22, True, GRAY, 0)])
+card(s, 0.55, 3.05, 6.05, 1.95, '의심 1 — 지정 단계', [
     '판정 기준은 이동시간 파생 지표뿐이다',
     '관내 분만 인프라가 소멸해도 "옆 도시로 60분 안에 갈 수 있으면" 취약지가 아니게 되는 구조 아닌가?',
-    '→ 기준이 구조적으로 놓치는 지역이 있는지 검증한다', ], fill=RGBColor(0xFB, 0xF0, 0xEE), tcolor=RED)
-card(s, 6.85, 2.95, 6.05, 1.95, '의심 2 — 배분 단계', [
+    '→ 기준이 구조적으로 놓치는 지역이 있는지 검증한다', ], fill=REDBG, tcolor=RED)
+card(s, 6.85, 3.05, 6.05, 1.95, '의심 2 — 배분 단계', [
     '지원 심사 배점 100점 중 취약도 항목은 0점',
     '시·도 선별 기준은 "예산 규모, 의료 취약성 등 고려"가 전부 — 누구를 먼저 지원할지의 규칙이 있는가?',
-    '→ 현행 배분이 무엇으로 설명되는지 진단한다', ], fill=RGBColor(0xFB, 0xF0, 0xEE), tcolor=RED)
-card(s, 0.55, 5.15, 12.35, 1.55, '왜 지금, 왜 데이터인가', [
+    '→ 현행 배분이 무엇으로 설명되는지 진단한다', ], fill=REDBG, tcolor=RED)
+card(s, 0.55, 5.25, 12.35, 1.55, '왜 지금, 왜 데이터인가', [
     '분만 인프라 공백은 언론·국회에서 반복 지적되어 왔으나, 전국 단위 공개 데이터로 정량 검증된 적이 없다',
     '분석 대상은 취약지라는 현상이 아니라, 취약지를 판정하고 지원하는 제도 그 자체다 (제도 감사 프레임)',
     '모든 판단 기준과 임계값은 정부 자신의 문서·데이터에서 가져와 실현 가능성을 확보할 계획이다', ])
 
 # ── 3. 연구 질문 ────────────────────────────────────────────
-s = prs.slides.add_slide(BLANK)
+s = slide()
 header(s, 3, '연구 질문 (RQ) — 감사의 네 가지 물음')
 rqs = [('RQ1 · 지정의 검증', '현행 지정은 공표된 판정식대로 실제 작동하는가?\n공급(관내 인프라) 변수는 판정에 반영되는가?'),
        ('RQ2 · 사각지대 탐지', '판정식이 구조적으로 놓치는 지역이 실재하는가?\n(거리 기준은 통과하지만 관내 공급이 소멸한 지역)'),
        ('RQ3 · 배분의 진단', '지정 이후의 지원 배분은 공개 지표로 설명되는가?\n등급·취약도·수요 중 무엇이 선정을 갈랐는가?'),
        ('RQ4 · 처방과 대조', '정부가 이미 정한 기준만 조합해 배분 규칙을 만들면\n현행 배분과 어디가 어긋나는가?')]
 for i, (t, b) in enumerate(rqs):
-    x, y = 0.55 + (i % 2) * 6.3, 1.4 + (i // 2) * 2.15
-    rect(s, x, y, 6.05, 1.9, LIGHT, LINE)
-    rect(s, x, y, 0.14, 1.9, NAVY)
+    x, y = 0.55 + (i % 2) * 6.3, 1.5 + (i // 2) * 2.15
+    rect(s, x, y, 6.05, 1.9, LIGHT)
+    accent_chip(s, x + 0.02, y + 0.25, 0.09, 1.4)
     text_block(s, x + 0.35, y + 0.18, 5.55, 1.6,
                [(t, 15, True, NAVY, 5)] + [(line, 12, False, DARK, 2) for line in b.split('\n')])
-text_block(s, 0.55, 5.85, 12.3, 0.9, [
+text_block(s, 0.55, 5.95, 12.3, 0.9, [
     ('RQ1·2는 "지정 감사", RQ3·4는 "배분 감사·처방"으로 묶여 제도 파이프라인 전체를 관통한다.', 12.5, True, DARK, 3),
     ('각 질문은 판단 기준을 분석 전에 명시해(사전 등록 성격) 사후 해석 시비를 차단한다.', 12, False, GRAY, 0),
 ])
 
 # ── 4. 이론적 고찰 ──────────────────────────────────────────
-s = prs.slides.add_slide(BLANK)
+s = slide()
 header(s, 4, '이론적 고찰 — 접근성의 두 축과 연구의 차별점')
-card(s, 0.55, 1.35, 6.05, 2.5, '보건지리학의 표준 관점 (2SFCA 계열)', [
+card(s, 0.55, 1.5, 6.05, 2.5, '보건지리학의 표준 관점 (2SFCA 계열)', [
     '의료 접근성 = 공간 축 × 비공간 축의 결합',
     '공간 축: 거리·이동시간 (얼마나 멀리 있는가)',
     '비공간 축: 공급·수용력 (그곳에 의사가 있는가)',
     '→ 가설: 현행 판정식은 공간 축만 계측할 것이다 — 데이터로 검증', ])
-card(s, 6.85, 1.35, 6.05, 2.5, '분석 단위에 대한 원칙', [
+card(s, 6.85, 1.5, 6.05, 2.5, '분석 단위에 대한 원칙', [
     '분석 단위: 전국 시·군·구 250곳 (표본이 아닌 전수)',
     '목적이 미지 표본 예측이 아니라 이미 내려진 판정·배분의 규칙 규명(감사)이므로 일반화 표집 논리와 구분해 설계',
     '지역 단위 결론을 개인에게 적용하지 않는다(생태학적 오류 경계)', ])
-text_block(s, 0.55, 4.1, 12.3, 0.4, [('선행 논의 대비 차별점', 14, True, NAVY, 0)])
-table(s, 0.55, 4.55, 12.35, [
+text_block(s, 0.55, 4.25, 12.3, 0.4, [('선행 논의 대비 차별점', 14, True, NAVY, 0)])
+table(s, 0.55, 4.7, 12.35, [
     ['기존 접근', '본 연구의 계획'],
     ['"취약지가 어디인가"를 찾는 현상 분석', '"판정·배분 기준이 무엇을 놓치는가" — 제도 자체의 감사'],
     ['추상적 정책 제언', '정부 임계값만으로 구성한 재지정·우선순위 시뮬레이션과 표 산출물'],
@@ -200,50 +114,49 @@ table(s, 0.55, 4.55, 12.35, [
 ], widths=[5.2, 7.15], row_h=0.52)
 
 # ── 5. 분석 대상 제도 ───────────────────────────────────────
-s = prs.slides.add_slide(BLANK)
+s = slide()
 header(s, 5, '분석 대상 제도 — 판정 지표, 등급, 배분 관문')
-text_block(s, 0.55, 1.3, 12.3, 0.4, [('판정 지표 2개 (사전 조사 결과)', 14, True, NAVY, 0)])
-table(s, 0.55, 1.72, 12.35, [
+text_block(s, 0.55, 1.45, 12.3, 0.4, [('판정 지표 2개 (사전 조사 결과)', 14, True, NAVY, 0)])
+table(s, 0.55, 1.87, 12.35, [
     ['지표', '정의', '성격'],
     ['접근성취약인구비율', '60분 내 분만가능기관에 도달 불가능한 가임인구 비율 (GIS 계산)', '이론값'],
     ['기준시간내 의료이용률(TRI)', '실제 분만 중 이동시간 60분 내 기관 이용 비율 (건보 청구 기반)', '행태 실측값'],
 ], widths=[3.1, 7.3, 1.95], row_h=0.5)
-text_block(s, 0.55, 3.45, 12.3, 0.4, [('등급 체계와 배분 절차', 14, True, NAVY, 0)])
-card(s, 0.55, 3.9, 6.05, 2.1, 'A·B·C 등급 (공고 제2026-144호, 108곳)', [
+text_block(s, 0.55, 3.6, 12.3, 0.4, [('등급 체계와 배분 절차', 14, True, NAVY, 0)])
+card(s, 0.55, 4.05, 6.05, 2.1, 'A·B·C 등급 (공고 제2026-144호, 108곳)', [
     'A: 두 지표 모두 취약 (32곳) / B: 하나만 취약 (21곳)',
     'C: 배경인구 미달 또는 분만 지원 기수령 (55곳)',
     'C는 취약도 서열이 아니라 자격표 성격 — "지원받으면 C가 되는" 정의 구조를 분석 설계에 반영해야 함', ])
-card(s, 6.85, 3.9, 6.05, 2.1, '배분의 4단계 관문', [
+card(s, 6.85, 4.05, 6.05, 2.1, '배분의 4단계 관문', [
     '병원 신청 → 시·군 1곳 선정 → 시·도 선별 → 복지부 심사',
     '심사 100점 = 정량 20 + 정성 80, 취약도 항목 0점',
     '병원이 신청하지 않으면 등급이 있어도 지원 없음',
     '→ "올해 누구 차례인가"를 정하는 규칙의 부재가 쟁점', ])
-text_block(s, 0.55, 6.25, 12.3, 0.5, [
+text_block(s, 0.55, 6.4, 12.3, 0.5, [
     ('이 제도 사실들은 모두 공개 문서(고시·공고·지침)에서 확인했으며, 분석의 판단 기준으로만 사용한다.', 11.5, False, GRAY, 0)])
 
 # ── 6. 데이터 수집 계획 ─────────────────────────────────────
-s = prs.slides.add_slide(BLANK)
+s = slide()
 header(s, 6, '데이터 수집 계획 — 전량 공개 자료, 승인 불요')
-table(s, 0.55, 1.35, 12.35, [
+table(s, 0.55, 1.5, 12.35, [
     ['원천', '내용', '확보 방법'],
-    ['헬스맵 공공보건의료 데이터셋 9종 (국립중앙의료원, 2023)', '판정지표·인구·분만건수·기관정보·환자 유출입(거주지→진료지) 약 226만 행', '공공데이터포털 15154171 (로그인·승인 불요, 공공누리)'],
+    ['헬스맵 공공보건의료 데이터셋 9종 (국립중앙의료원, 2023)', '판정지표·인구·분만건수·기관정보·환자 유출입 약 226만 행', '공공데이터포털 15154171 (로그인·승인 불요)'],
     ['복지부 공고 제2026-144호', '분만취약지 108곳 등급표 + 기지원 표시', 'PDF 표를 직접 전사'],
     ['분만취약지 지원사업 안내 (343쪽)', '판정 임계값·선정 절차·배점표·사업 유형', '정부 공개 지침'],
 ], widths=[3.9, 5.15, 3.3], row_h=0.62)
-text_block(s, 0.55, 4.1, 12.3, 0.4, [('직접 구축할 파생 데이터 3종', 14, True, NAVY, 0)])
+text_block(s, 0.55, 4.25, 12.3, 0.4, [('직접 구축할 파생 데이터 3종', 14, True, NAVY, 0)])
 for i, (t, b) in enumerate([
     ('D1 · 등급-지원 데이터셋', ['PDF 공고 표를 전사하고 합계 검증 코드(assert)로 전사 오류를 자동 차단']),
     ('D2 · 관내 분만 수행량', ['유출입 자료를 기관 소재지 기준으로 합산해 "그 지역 병원이 받은 분만"을 추정']),
     ('D3 · 미충족 분만', ['분만건수 × (1−TRI/100): 기준시간 밖에서 이뤄진 출산 규모(부담 축 지표)'])]):
-    x = 0.55 + i * 4.2
-    card(s, x, 4.55, 3.95, 1.85, t, b, bsize=11)
-text_block(s, 0.55, 6.55, 12.3, 0.45, [
+    card(s, 0.55 + i * 4.2, 4.7, 3.95, 1.55, t, b, bsize=11)
+text_block(s, 0.55, 6.5, 12.3, 0.45, [
     ('원칙: 로그인이 필요하거나 재현 불가능한 자료는 쓰지 않는다 — 누구나 같은 결과를 재현할 수 있어야 한다.', 12, True, DARK, 0)])
 
 # ── 7. 전처리·품질 관리 계획 ────────────────────────────────
-s = prs.slides.add_slide(BLANK)
+s = slide()
 header(s, 7, '전처리·품질 관리 계획 — 예상 함정과 대응 설계')
-table(s, 0.55, 1.35, 12.35, [
+table(s, 0.55, 1.5, 12.35, [
     ['예상 함정', '대응 계획'],
     ['유출입 자료의 방향(출발/도착) 정의가 문서에 없음', '행·열 합계와 "병원 없는 지역" 교차 대조로 방향을 확정한 뒤 사용'],
     ['수요(주민이 낳은 수)와 공급(병원이 받은 수)의 혼동', '두 개념을 변수명부터 분리하고, 파생 지표 정의를 문서화'],
@@ -251,13 +164,13 @@ table(s, 0.55, 1.35, 12.35, [
     ['행정구역 변동(군위군 대구 편입 등)', '기준 시점을 정해 정규화하고 변동 이력을 기록'],
     ['결측·전면 누락 지표', '전 지표 결측 감사 후 배제 목록과 사유를 보고서에 남김'],
 ], widths=[5.5, 6.85], row_h=0.52)
-card(s, 0.55, 4.75, 12.35, 1.75, '품질 게이트 (통과해야 분석 단계로 진행)', [
+card(s, 0.55, 4.9, 12.35, 1.75, '품질 게이트 (통과해야 분석 단계로 진행)', [
     '보고서의 모든 수치는 스크립트 재실행으로 재현되어야 한다 (수기 계산 금지)',
     '직접 구축 지표(D2 등)는 공식 통계와 상관·오차를 대조하는 이중 검증을 통과해야 한다',
     '전사 데이터(D1)는 공고의 등급별 합계와 자동 대조(assert)한다', ])
 
 # ── 8. 분석 설계 1 — 지정 감사 ──────────────────────────────
-s = prs.slides.add_slide(BLANK)
+s = slide()
 header(s, 8, '분석 설계 ① 지정 감사 (RQ1·RQ2)', '공표된 규칙을 그대로 재계산해 실제와 대조한다')
 for i, (t, b) in enumerate([
     ('1단계 · 판정식 검증', ['공표 임계값(접근성·TRI 30/30 등)으로 전 지역을 재판정하고 실제 지정 결과와 대조한다',
@@ -267,59 +180,58 @@ for i, (t, b) in enumerate([
     ('3단계 · 사각지대 탐지', ['"거리 기준 통과 ∧ 관내 공급 공백 ∧ 관내 이용 0"의 3중 기준을 사전 정의하고 해당 지역을 탐지한다',
                               '중증 이송 반론은 동급 병원 유출 분리로, 선호 원정 반론은 관내 선택지 유무로 통제한다']),
 ]):
-    card(s, 0.55 + i * 4.2, 1.75, 3.95, 2.9, t, b, bsize=11, tsize=13.5)
-card(s, 0.55, 4.95, 12.35, 1.55, '판단 기준의 사전 명시', [
+    card(s, 0.55 + i * 4.2, 1.9, 3.95, 2.9, t, b, bsize=11, tsize=13.5)
+card(s, 0.55, 5.1, 12.35, 1.55, '판단 기준의 사전 명시', [
     '무엇을 "재현 성공"으로, 무엇을 "사각지대"로 볼지의 기준을 분석 전에 확정해 보고서에 명시한다',
     '반대 해석(예: "옆 도시로 가면 되지 않는가")을 본문에서 정면으로 다루는 섹션을 계획에 포함한다', ])
 
 # ── 9. 분석 설계 2 — 배분 진단 ──────────────────────────────
-s = prs.slides.add_slide(BLANK)
+s = slide()
 header(s, 9, '분석 설계 ② 배분 진단 (RQ3)', '작은 표본의 관행을 지키는 검정 사다리')
-card(s, 0.55, 1.75, 12.35, 1.3, '설계 원칙 — C등급 제외', [
+card(s, 0.55, 1.9, 12.35, 1.3, '설계 원칙 — C등급 제외', [
     'C의 정의에 "지원 기수령"이 포함되어, 지원받으면 C가 되는 순환 구조가 있다 — 종속변수가 집단 정의에 새어드는 셈',
     '이 누출을 막기 위해 실질 취약지 A·B만으로 배분을 분석한다 (제외 논리 자체를 보고서에 기록)', ])
 steps = [('①  분할표 검정', 'A·B 등급과 지원 여부의 연관을 Fisher 정확검정으로 확인 (작은 표에 적합)'),
          ('②  변수별 비교', '지원/미지원 집단의 지표 차이를 Mann-Whitney U로 검정하고, 다중비교는 BH 보정으로 통제'),
          ('③  다변량 모형', '사건 수 대비 변수 수 관행(EPV)을 지켜 소수 변수 로지스틱 + 우도비검정 + 부트스트랩 부호 일관성으로 판단')]
 for i, (t, b) in enumerate(steps):
-    y = 3.3 + i * 0.95
+    y = 3.45 + i * 0.95
     rect(s, 0.55, y, 2.5, 0.75, NAVY)
     text_block(s, 0.7, y + 0.08, 2.3, 0.6, [(t, 13, True, WHITE, 0)], anchor=MSO_ANCHOR.MIDDLE)
-    rect(s, 3.2, y, 9.7, 0.75, LIGHT, LINE)
+    rect(s, 3.2, y, 9.7, 0.75, LIGHT)
     text_block(s, 3.4, y + 0.08, 9.35, 0.6, [(b, 11.5, False, DARK, 0)], anchor=MSO_ANCHOR.MIDDLE)
-text_block(s, 0.55, 6.3, 12.3, 0.7, [
+text_block(s, 0.55, 6.45, 12.3, 0.7, [
     ('보고 원칙: "유의하지 않음"을 "효과 없음"으로 쓰지 않는다 — 표본이 작아 식별 불가일 수 있음을 명시하고,', 11.5, False, GRAY, 2),
     ('개별 p값보다 방향의 안정성(부트스트랩)과 모형 설명력을 함께 제시한다.', 11.5, False, GRAY, 0),
 ])
 
 # ── 10. 분석 설계 3 — 처방 모형 ─────────────────────────────
-s = prs.slides.add_slide(BLANK)
+s = slide()
 header(s, 10, '분석 설계 ③ 처방 — 우선순위·유형 배정 모형 (RQ4)', '새 기준을 만들지 않는다: 정부 문서의 임계값만 조합한다')
-card(s, 0.55, 1.75, 6.05, 2.25, '우선순위 — 두 관점을 병렬 제시', [
+card(s, 0.55, 1.9, 6.05, 2.25, '우선순위 — 두 관점을 병렬 제시', [
     '심도 축: 취약이 가장 깊은 곳 먼저 — 객관 가중(엔트로피·CRITIC) + TOPSIS 종합',
     '부담 축: 영향 인원이 큰 곳 먼저 — 미충족 분만 규모',
     '두 축을 평균해 합성하지 않는다 — 가치 선택을 가리는 대신 병렬로 드러내는 것이 목적', ])
-card(s, 6.85, 1.75, 6.05, 2.25, '유형 배정 — 규칙 기반 (머신러닝 아님)', [
+card(s, 6.85, 1.9, 6.05, 2.25, '유형 배정 — 규칙 기반 (머신러닝 아님)', [
     '관내 수행·인구·수요·접근성의 정부 임계값만으로 설치/운영지원/외래/순회 4유형을 규칙 배정',
     '학습이 없어 과적합·라벨 누수 논쟁에서 자유롭고, 모든 판정이 문서의 숫자로 소급 가능', ])
-card(s, 0.55, 4.25, 12.35, 2.15, '검증 계획 — 모형을 스스로 공격한다', [
+card(s, 0.55, 4.4, 12.35, 2.15, '검증 계획 — 모형을 스스로 공격한다', [
     '외부 검증: 공고의 순회진료 대상 목록과 본 규칙의 판정을 교차 대조한다 (일치·불일치 모두 보고)',
     '민감도 분석: 차용한 임계값을 변화시켜 결과가 얼마나 흔들리는지 공개한다',
     '강건성 분석: 가중법을 바꿔(엔트로피/CRITIC/동일 가중) 순위가 유지되는지 확인한다',
     '실패한 설계(예: 군집분석이 부적합하면 기각 사유)도 은폐하지 않고 보고서에 남긴다', ])
 
 # ── 11. 기대 산출물·활용 ────────────────────────────────────
-s = prs.slides.add_slide(BLANK)
+s = slide()
 header(s, 11, '기대 산출물과 활용 계획')
 for i, (t, b) in enumerate([
     ('보고서·시각화', ['통합 결과보고서 (지정 감사 + 배분 진단·처방)', '그림: 심도-부담 산점도, 등급별 지원율, 유형 배정 교차표, 전국 불일치 지도']),
     ('표 산출물', ['전국 우선순위표 (지역×순위×권고유형×근거)', '시·도별 우선순위표 — 배분 심사가 시·도 단위이므로 실무에 바로 쓰이는 형태']),
     ('정책 제언', ['지정: 공급 공백형 트랙 / 지표: 관내·관외 병기', '배분: 부담 축 병기, 표준 우선순위표 제공', '— 모두 예산 증액 없이 가능한 방향으로 설계']),
 ]):
-    x = 0.55 + i * 4.2
-    card(s, x, 1.4, 3.95, 2.15, t, b, bsize=11)
-text_block(s, 0.55, 3.85, 12.3, 0.4, [('평가 기준 대응 계획', 14, True, NAVY, 0)])
-table(s, 0.55, 4.3, 12.35, [
+    card(s, 0.55 + i * 4.2, 1.5, 3.95, 2.15, t, b, bsize=11)
+text_block(s, 0.55, 3.95, 12.3, 0.4, [('평가 기준 대응 계획', 14, True, NAVY, 0)])
+table(s, 0.55, 4.4, 12.35, [
     ['평가 항목 (배점)', '본 계획의 대응'],
     ['계획 수립·이론적 고찰 (30)', '제도 파이프라인 문제화, RQ 4개, 접근성 2축 이론, 사전 명시된 판단 기준'],
     ['수집·전처리·EDA (30)', '공개 데이터 226만 행 + 정부 문서, 파생 3종 구축, 함정 대응·품질 게이트'],
@@ -328,9 +240,9 @@ table(s, 0.55, 4.3, 12.35, [
 ], widths=[3.6, 8.75], row_h=0.5)
 
 # ── 12. 일정·역할 ───────────────────────────────────────────
-s = prs.slides.add_slide(BLANK)
+s = slide()
 header(s, 12, '추진 일정과 역할 분담 (2인)')
-table(s, 0.55, 1.4, 12.35, [
+table(s, 0.55, 1.5, 12.35, [
     ['기간', '할 일', '산출물'],
     ['7월 하순', '주제 탐색·후보 검증, 데이터 실물 확인(확보 가능성 전수 점검)', '주제 확정 기록'],
     ['8월 1주', '데이터 수집·전처리, 파생 데이터 구축과 이중 검증, EDA', '정제 데이터·EDA 노트'],
@@ -339,12 +251,12 @@ table(s, 0.55, 1.4, 12.35, [
     ['8/11 ~ 8/13', '계획서·결과보고서 PPT, 시연 영상(5분), 소스·데이터 패키징', '제출물 일체'],
     ['8/14 (금)', '최종 점검 후 17:00 전 USB 방문 제출', '—'],
 ], widths=[2.1, 7.45, 2.8], row_h=0.52)
-card(s, 0.55, 5.2, 6.05, 1.6, '대표자', [
+card(s, 0.55, 5.35, 6.05, 1.5, '대표자', [
     '지정 감사 설계·수행, 지도 시각화',
     '통합 보고서 작성, 계획서·결과 PPT', ])
-card(s, 6.85, 5.2, 6.05, 1.6, '팀원', [
+card(s, 6.85, 5.35, 6.05, 1.5, '팀원', [
     '배분 진단·처방 모형 설계·수행',
     '그림 제작, 분석 재현성 검증', ])
 
 prs.save(OUT)
-print('저장:', OUT, '/', len(prs.slides.slides if hasattr(prs.slides,"slides") else prs.slides._sldIdLst), '장')
+print('저장:', OUT, '/', len(prs.slides._sldIdLst), '장')

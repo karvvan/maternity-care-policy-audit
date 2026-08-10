@@ -33,7 +33,7 @@ os.makedirs(OUT, exist_ok=True)
 
 plt.rcParams['font.family'] = 'Malgun Gothic'
 plt.rcParams['axes.unicode_minus'] = False
-NAVY, BLUE, RED, GRAY = '#0f2b44', '#2b6cb0', '#c0392b', '#c8d0d8'
+NAVY, BLUE, RED, GRAY = '#17456b', '#3E6DB5', '#E85D42', '#c8d0d8'
 
 df = pd.read_csv(CSV, encoding='utf-8-sig')
 df['권역'] = df['지역'].str.split().str[0]
@@ -187,7 +187,7 @@ for idx, row in df.iterrows():
         continue
     supported = '기' in row['현행']
     is_top_unsup = row['불일치'] == '상위-미지원'
-    fc = BLUE if supported else (RED if is_top_unsup else '#e8b7ad')
+    fc = BLUE if supported else (RED if is_top_unsup else '#F2C0B0')
     pcs = [MplPolygon(r, closed=True) for r in rings(polys[idx])]
     ax.add_collection(PatchCollection(pcs, facecolor=fc, edgecolor='white', linewidths=.5,
                                       zorder=3 if is_top_unsup else 2))
@@ -226,7 +226,7 @@ ax.axis('off')
 ax.set_title('배분과 취약 심도의 불일치 지도 — 깊은 곳은 비어 있고, 얕은 곳이 채워져 있다',
              fontsize=12.5, color=NAVY, pad=14)
 legend = [Patch(fc=RED, label=f'심도 상위인데 미지원 ({len(top_unsup)}곳)'),
-          Patch(fc='#e8b7ad', label=f'그 외 미지원 A·B ({int(df["현행"].str.contains("미").sum()) - len(top_unsup)}곳)'),
+          Patch(fc='#F2C0B0', label=f'그 외 미지원 A·B ({int(df["현행"].str.contains("미").sum()) - len(top_unsup)}곳)'),
           Patch(fc=BLUE, label=f'기 지원 A·B (21곳, 이 중 심도 하위 {len(low_sup)}곳 별도 표기)'),
           Patch(fc='#f0f2f4', ec='#d4dade', label='그 외 시군구')]
 ax.legend(handles=legend, loc='upper left', fontsize=9, framealpha=.95)
