@@ -15,7 +15,17 @@ from PIL import Image, ImageDraw, ImageFilter
 
 CACHE = os.environ.get('ASSET_DIR') or os.path.join(os.path.dirname(os.path.abspath(__file__)), '_assets')
 os.makedirs(CACHE, exist_ok=True)
-BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+def _project_root(start):
+    """04_제출물 폴더가 있는 상위 디렉터리를 프로젝트 루트로 본다 (스크립트 위치에 무관)"""
+    d = os.path.dirname(os.path.abspath(start))
+    while d != os.path.dirname(d):
+        if os.path.isdir(os.path.join(d, '04_제출물')):
+            return d
+        d = os.path.dirname(d)
+    raise RuntimeError('프로젝트 루트를 찾지 못했습니다')
+
+
+BASE = _project_root(__file__)
 
 
 def _cached(name):
@@ -248,6 +258,7 @@ def build_defaults():
 
 if __name__ == '__main__':
     import io, sys
-    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+    if (sys.stdout.encoding or '').lower() not in ('utf-8', 'utf8'):   # 중복 래핑 방지
+        sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
     for k, v in build_defaults().items():
         print(k, '->', os.path.basename(v))

@@ -15,9 +15,20 @@
 """
 import sys, io, os, re, markdown
 
-sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+if (sys.stdout.encoding or '').lower() not in ('utf-8', 'utf8'):   # 중복 래핑 방지
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
-BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+def _project_root(start):
+    """04_제출물 폴더가 있는 상위 디렉터리를 프로젝트 루트로 본다 (스크립트 위치에 무관)"""
+    d = os.path.dirname(os.path.abspath(start))
+    while d != os.path.dirname(d):
+        if os.path.isdir(os.path.join(d, '04_제출물')):
+            return d
+        d = os.path.dirname(d)
+    raise RuntimeError('프로젝트 루트를 찾지 못했습니다')
+
+
+BASE = _project_root(__file__)
 PHOTO = os.environ.get('PHOTO_DIR') or os.path.join(BASE, '05_팀운영', '보고서_사진소스')
 
 import design_assets
@@ -116,6 +127,13 @@ CSS = f"""
                box-shadow: 2mm 2.8mm 7mm rgba(30,42,62,.15); }}
   figcaption {{ font-size: 8.3pt; color: #7A8698; margin-top: 1.6mm; }}
 
+  /* 표 캡션 */
+  .tabcap {{ font-size: 8.6pt; color: #4A5768; margin: 3.5mm 0 1.2mm;
+            padding-left: 2.2mm; border-left: 1mm solid #33393F;
+            page-break-after: avoid; clear: both; }}
+  table {{ clear: both; }}
+  .tabcap b {{ color: #1A2434; }}
+
   .photo {{ page-break-inside: avoid; margin: 2mm 0 3mm; }}
   .photo img {{ width: 100%; border-radius: 3mm; box-shadow: 2.2mm 3mm 7mm rgba(30,42,62,.22);
                display: block; }}
@@ -163,10 +181,10 @@ INJECT = [
     (r'(<h2>1\. 서론</h2>)',
      photo_fig('newborn.jpg', '분만 인프라는 한 명의 탄생을 받치는 지역의 기반 시설이다. '
                '(사진: Wikimedia Commons, Shixart1985, CC BY 2.0)', 'pr')),
-    (r'(<h2>2\. 제도와 이론</h2>)',
+    (r'(<h3>2\.3\.[^<]*</h3>)',
      photo_fig('gov_cover.png', '자료화면 — 보건복지부 「2026년 분만취약지 지원사업 안내」(343쪽) 표지. '
                '본 연구의 모든 임계값·절차는 이 문서에서 나온다.', 'pr', shot=True)),
-    (r'(<h3>5\.3\.[^<]*</h3>)',
+    (r'(<h3>5\.5\.[^<]*</h3>)',
      photo_fig('village.jpg', '거리 기준을 통과해도 관내 분만 인프라가 소멸한 농촌 지역이 실재한다. '
                '(사진: Wikimedia Commons, Alain Seguin, CC BY-SA 3.0)', 'pr')),
     (r'(<h3>5\.4\.[^<]*</h3>)',
@@ -196,6 +214,11 @@ def convert(md_path, html_path, title):
     # 2) 이미지 → figure/figcaption
     body = re.sub(r'<p><img alt="([^"]*)" src="([^"]*)"\s*/?>(</p>)',
                   r'<figure><img alt="\1" src="\2"><figcaption>\1</figcaption></figure>', body)
+
+    # 2.5) [표 N] 제목 → 표 캡션 (바로 뒤 표에 붙는다)
+    body, ncap = re.subn(r'<p>\[표\s*(\d+)\]\s*([^<]*)</p>\s*(?=<table>)',
+                         r'<div class="tabcap"><b>표 \1.</b> \2</div>', body)
+    print(f'  표 캡션 {ncap}개 적용')
 
     # 3) 사진·자료화면 주입
     for pat, html in INJECT:

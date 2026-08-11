@@ -7,3 +7,4 @@ desktop.ini
 # 로컬 실행 스크립트 (개인 환경용)
 Claude 시작.bat
 _assets/
+__pycache__/
