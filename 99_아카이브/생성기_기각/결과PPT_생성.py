@@ -6,6 +6,21 @@
 출력: 04_제출물/데이터분석_결과보고서.pptx (16:9, 19장)
 """
 import os, sys, io
+
+
+def _project_root(start):
+    """04_제출물 폴더가 있는 상위 디렉터리를 프로젝트 루트로 본다 (스크립트 위치에 무관)"""
+    d = os.path.dirname(os.path.abspath(start))
+    while d != os.path.dirname(d):
+        if os.path.isdir(os.path.join(d, '04_제출물')):
+            return d
+        d = os.path.dirname(d)
+    raise RuntimeError('프로젝트 루트를 찾지 못했습니다')
+
+
+BASE = _project_root(__file__)
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))       # ppt_helpers
+sys.path.insert(0, os.path.join(BASE, '03_분석', '_문서생성'))        # design_assets
 from pptx.util import Inches, Pt
 from pptx.dml.color import RGBColor
 from pptx.enum.text import MSO_ANCHOR
@@ -14,7 +29,6 @@ from ppt_helpers import (new_deck, text_block, rect, card, header as _header, ta
                          NAVY, DARK, RED, GRAY, LIGHT, LINE, WHITE, REDBG, TEAL, BLUE)
 
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
-BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FIG = os.path.join(BASE, '04_제출물', '그림')
 OUT = os.environ.get('PPTX_OUT') or os.path.join(BASE, '04_제출물', '데이터분석_결과보고서.pptx')
 
@@ -129,7 +143,8 @@ card(s, 7.35, 4.0, 5.55, 1.45, '15년의 결과', [
     '누적 지원 57개소 (분만 36 · 외래 15 · 순회 6)',
     '2025년 신규는 전국 1개소', ], bsize=11)
 text_block(s, 0.55, 5.85, 12.35, 0.9, [
-    ('병목은 "한 지역에 몇 개"가 아니라 "올해 누구 차례인가"이며, 그 줄을 세우는 규칙이 없다.', 13, True, RED, 0)])
+    ('제약은 "한 지역에 몇 개"가 아니라 "한 해에 전국 몇 곳"이다 — 관건은 "올해 누구 차례인가"인데, 그 순서 규칙이 없다.',
+     13, True, RED, 0)])
 
 # ── 6. 데이터·전처리 ────────────────────────────────────────
 s = slide()

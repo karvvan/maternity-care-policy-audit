@@ -15,6 +15,10 @@ from pptx.enum.shapes import MSO_SHAPE
 from pptx.oxml.ns import qn
 from lxml import etree
 
+import sys, os
+sys.path.insert(0, os.path.join(
+    os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+    '03_분석', '_문서생성'))
 import design_assets
 
 ASSETS = design_assets.build_defaults()

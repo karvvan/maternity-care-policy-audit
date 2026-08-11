@@ -6,6 +6,21 @@
 출력: 04_제출물/데이터분석_계획서.pptx (16:9, 12장)
 """
 import os, sys, io
+
+
+def _project_root(start):
+    """04_제출물 폴더가 있는 상위 디렉터리를 프로젝트 루트로 본다 (스크립트 위치에 무관)"""
+    d = os.path.dirname(os.path.abspath(start))
+    while d != os.path.dirname(d):
+        if os.path.isdir(os.path.join(d, '04_제출물')):
+            return d
+        d = os.path.dirname(d)
+    raise RuntimeError('프로젝트 루트를 찾지 못했습니다')
+
+
+BASE = _project_root(__file__)
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))       # ppt_helpers
+sys.path.insert(0, os.path.join(BASE, '03_분석', '_문서생성'))        # design_assets
 from pptx.util import Inches, Pt
 from pptx.dml.color import RGBColor
 from pptx.enum.text import MSO_ANCHOR
@@ -14,7 +29,6 @@ from ppt_helpers import (new_deck, text_block, rect, card, header as _header, ta
                          NAVY, DARK, RED, GRAY, LIGHT, WHITE, REDBG)
 
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
-BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.environ.get('PPTX_OUT') or os.path.join(BASE, '04_제출물', '데이터분석_계획서.pptx')
 
 prs, BLANK = new_deck()
