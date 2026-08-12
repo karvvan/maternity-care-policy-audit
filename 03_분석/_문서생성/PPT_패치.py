@@ -41,6 +41,10 @@ SUBMIT = os.path.join(BASE, '04_제출물')
 STAGING = os.path.join(BASE, '05_작업자료', '_PPT생성본')
 DECKS = {'결과': '데이터분석_결과보고서.pptx', '계획서': '데이터분석_계획서.pptx'}
 
+# 다른 사람이 편집 중이라 손대면 안 되는 덱. 대표자가 넘겨줄 때 이 줄을 비운다.
+# 읽기(load)는 허용하고 쓰기(deploy)만 막는다 — 확인은 해야 하니까.
+HOLD = {'결과': '팀원이 작업 중 (2026-08-12~). 대표자가 다시 넘겨줄 때까지 반영 금지'}
+
 
 def _name(deck):
     if deck in DECKS:
@@ -106,6 +110,8 @@ def deploy(deck, suffix=''):
     사용자가 PowerPoint에서 저장하는 순간 되돌아가거나, 편집분이 사라진다.
     """
     n = _name(deck)
+    if deck in HOLD:
+        return False, f'거부: {n} 은(는) 반영 보류 중입니다 — {HOLD[deck]}'
     if is_open(deck):
         return False, f'{n} 이(가) PowerPoint에서 열려 있습니다. 닫은 뒤 다시 시도하세요.'
     stem, ext = os.path.splitext(n)

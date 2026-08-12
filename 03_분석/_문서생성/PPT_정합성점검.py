@@ -19,7 +19,7 @@ if (sys.stdout.encoding or '').lower() not in ('utf-8', 'utf8'):
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
 from pptx.util import Emu, Inches
-from PPT_패치 import load, save, deploy, is_open, replace_text, _frames
+from PPT_패치 import load, save, deploy, is_open, replace_text, _frames, HOLD
 
 CHIP_IN = 0.1135              # 헤더 액센트 칩 목표 크기 (원래 0.34의 1/3)
 
@@ -86,7 +86,11 @@ def check(deck, apply=False):
     if missing:
         issues.append(f'★ 사라진 내용: {missing} — 자동 복구 불가, 별도 패치 필요')
 
-    print(f'── {deck}  {len(prs.slides._sldIdLst)}장 · 열림={is_open(deck)}')
+    held = deck in HOLD
+    print(f'── {deck}  {len(prs.slides._sldIdLst)}장 · 열림={is_open(deck)}' + (f'  [보류: {HOLD[deck]}]' if held else ''))
+    if held:
+        print('   ' + ('점검만 수행 — ' + ' / '.join(issues) if issues else '점검만 수행 — 이상 없음'))
+        return
     if not issues:
         print('   정상 — 모든 수정이 반영되어 있음')
         return
