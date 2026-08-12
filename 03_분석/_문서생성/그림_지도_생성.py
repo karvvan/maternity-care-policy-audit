@@ -6,11 +6,13 @@
   03_분석/조원분석_검증/최종_우선순위표_재실행.csv  (A·B 53곳, 노트북 재실행 산출)
   02_데이터/skorea-municipalities-2018-geo.json     (통계청 시군구 경계, southkorea-maps)
 출력:
-  04_제출물/그림/그림1_심도부담_산점도.png
+  04_제출물/그림/그림1_심도부담_산점도.png      (보고서 PDF용 컬러판)
   04_제출물/그림/그림2_등급별_지원율.png
   04_제출물/그림/그림3_배정_교차표.png
   04_제출물/그림/그림4_지도_우선순위.png
   04_제출물/시도별_우선순위표.csv
+
+  환경변수 FIG_MONO=1 로 실행하면 같은 그림의 무채색판을 04_제출물/그림_모노 에 굽는다 (PPT용).
 """
 import json, os, sys, io
 import pandas as pd
@@ -39,12 +41,21 @@ def _project_root(start):
 BASE = _project_root(__file__)
 CSV = os.path.join(BASE, '03_분석', '조원분석_검증', '최종_우선순위표_재실행.csv')
 GEO = os.path.join(BASE, '02_데이터', 'skorea-municipalities-2018-geo.json')
-OUT = os.path.join(BASE, '04_제출물', '그림')
+# FIG_MONO=1 이면 무채색판을 04_제출물/그림_모노 에 따로 굽는다 (PPT용).
+# 보고서 PDF가 쓰는 04_제출물/그림 은 건드리지 않는다.
+MONO = os.environ.get('FIG_MONO') == '1'
+OUT = os.path.join(BASE, '04_제출물', '그림_모노' if MONO else '그림')
 os.makedirs(OUT, exist_ok=True)
 
 plt.rcParams['font.family'] = 'Malgun Gothic'
 plt.rcParams['axes.unicode_minus'] = False
-NAVY, BLUE, RED, GRAY = '#17456b', '#3E6DB5', '#E85D42', '#c8d0d8'
+if MONO:
+    # 색상(hue)이 아니라 명도(value)만으로 계열을 구분한다
+    NAVY, BLUE, RED, GRAY = '#1C1C1E', '#A2A7AC', '#2E3338', '#D2D5D8'
+    BAR2, HEAT1, HEAT2, MAP_REST = '#A8ADB2', '#7E848A', '#22262A', '#C6CACE'
+else:
+    NAVY, BLUE, RED, GRAY = '#17456b', '#3E6DB5', '#E85D42', '#c8d0d8'
+    BAR2, HEAT1, HEAT2, MAP_REST = '#7a93a8', NAVY, RED, '#F2C0B0'
 
 df = pd.read_csv(CSV, encoding='utf-8-sig')
 df['권역'] = df['지역'].str.split().str[0]
@@ -97,7 +108,7 @@ fig, ax = plt.subplots(figsize=(6.4, 5.2), dpi=200)
 grades = ['A', 'B']
 rates = [a_sup/(a_sup+a_uns)*100, b_sup/(b_sup+b_uns)*100]
 ns = [(a_sup, a_sup+a_uns), (b_sup, b_sup+b_uns)]
-bars = ax.bar(grades, rates, width=.52, color=[NAVY, '#7a93a8'])
+bars = ax.bar(grades, rates, width=.52, color=[NAVY, BAR2])
 for bar, rate, (k, n) in zip(bars, rates, ns):
     ax.text(bar.get_x()+bar.get_width()/2, rate+1.5, f'{rate:.0f}%\n({k}/{n}곳)',
             ha='center', fontsize=11, color=NAVY, fontweight='bold')
@@ -123,15 +134,18 @@ data = xt.values
 im_colors = np.zeros(data.shape + (4,))
 for i in range(data.shape[0]):
     for j in range(data.shape[1]):
-        base = np.array(matplotlib.colors.to_rgba(NAVY if j == 0 else RED))
+        base = np.array(matplotlib.colors.to_rgba(HEAT1 if j == 0 else HEAT2))
         alpha = 0.12 + 0.55 * data[i, j] / data.max()
         im_colors[i, j] = base * [1, 1, 1, 0] + [0, 0, 0, alpha]
         im_colors[i, j, :3] = base[:3]
 ax.imshow(im_colors, aspect='auto')
 for i in range(data.shape[0]):
     for j in range(data.shape[1]):
+        # 흰 바탕에 합성된 실제 셀 밝기로 글자색을 정한다 (명도만으로 구분하는 모노판에서 필수)
+        rgb, a = im_colors[i, j, :3], im_colors[i, j, 3]
+        lum = float(np.dot(1 - a * (1 - rgb), [0.299, 0.587, 0.114]))
         ax.text(j, i, f'{data[i,j]}곳', ha='center', va='center', fontsize=13,
-                color='white' if data[i, j] / data.max() > .45 else NAVY, fontweight='bold')
+                color='white' if lum < 0.55 else NAVY, fontweight='bold')
 ax.set_xticks([0, 1]); ax.set_xticklabels([f'{sup_col} (21곳)', f'{uns_col} (32곳)'], fontsize=10)
 ax.set_yticks(range(len(xt))); ax.set_yticklabels([f'{t}\n({int(data[i].sum())}곳)' for i, t in enumerate(xt.index)], fontsize=9.5)
 ax.set_title('모형의 유형 배정 vs 현행 지원 — 설치가 필요한 곳일수록 비어 있다', fontsize=12, color=NAVY, pad=12)
@@ -198,7 +212,7 @@ for idx, row in df.iterrows():
         continue
     supported = '기' in row['현행']
     is_top_unsup = row['불일치'] == '상위-미지원'
-    fc = BLUE if supported else (RED if is_top_unsup else '#F2C0B0')
+    fc = BLUE if supported else (RED if is_top_unsup else MAP_REST)
     pcs = [MplPolygon(r, closed=True) for r in rings(polys[idx])]
     ax.add_collection(PatchCollection(pcs, facecolor=fc, edgecolor='white', linewidths=.5,
                                       zorder=3 if is_top_unsup else 2))
@@ -237,7 +251,7 @@ ax.axis('off')
 ax.set_title('배분과 취약 심도의 불일치 지도 — 깊은 곳은 비어 있고, 얕은 곳이 채워져 있다',
              fontsize=12.5, color=NAVY, pad=14)
 legend = [Patch(fc=RED, label=f'심도 상위인데 미지원 ({len(top_unsup)}곳)'),
-          Patch(fc='#F2C0B0', label=f'그 외 미지원 A·B ({int(df["현행"].str.contains("미").sum()) - len(top_unsup)}곳)'),
+          Patch(fc=MAP_REST, label=f'그 외 미지원 A·B ({int(df["현행"].str.contains("미").sum()) - len(top_unsup)}곳)'),
           Patch(fc=BLUE, label=f'기 지원 A·B (21곳, 이 중 심도 하위 {len(low_sup)}곳 별도 표기)'),
           Patch(fc='#f0f2f4', ec='#d4dade', label='그 외 시군구')]
 ax.legend(handles=legend, loc='upper left', fontsize=9, framealpha=.95)
