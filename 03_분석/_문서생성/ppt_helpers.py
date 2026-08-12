@@ -214,7 +214,7 @@ def card(slide, x, y, w, h, title, body, fill=LIGHT, tcolor=NAVY, tsize=13, bsiz
 def header(slide, no, title, footer_label, sub=None):
     """화이트 헤더: 액센트 칩 + 잉크 제목 + 글로우 바 + 페이지 번호"""
     bg(slide, 'main')
-    accent_chip(slide, 0.607, 0.577, 0.227, 0.227)   # 2/3 크기, 중심은 그대로
+    accent_chip(slide, 0.663, 0.633, 0.114, 0.114)   # 원래 0.34의 1/3, 중심은 그대로
     text_block(slide, 1.05, 0.3, 10.6, 0.75, [(title, 21.5, True, INK, 0)], anchor=MSO_ANCHOR.MIDDLE)
     glow(slide, 0.57, 1.06, 4.6)
     text_block(slide, 11.85, 0.18, 1.3, 0.85, [(f'{no:02d}', 30, True, RGBColor(0xD8, 0xDA, 0xDD), 0)])
@@ -228,7 +228,7 @@ def header(slide, no, title, footer_label, sub=None):
 def toc(slide, groups, footer_label, title='목차', note=None):
     """목차 슬라이드. groups = [(부제목, 한줄설명, [(번호, 제목), ...]), ...] — 2열로 배치한다."""
     bg(slide, 'main')
-    accent_chip(slide, 0.607, 0.577, 0.227, 0.227)   # 2/3 크기, 중심은 그대로
+    accent_chip(slide, 0.663, 0.633, 0.114, 0.114)   # 원래 0.34의 1/3, 중심은 그대로
     text_block(slide, 1.05, 0.3, 10.6, 0.75, [(title, 21.5, True, INK, 0)], anchor=MSO_ANCHOR.MIDDLE)
     glow(slide, 0.57, 1.06, 4.6)
     text_block(slide, 0.55, 7.1, 12.3, 0.35,

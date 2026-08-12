@@ -21,7 +21,7 @@ if (sys.stdout.encoding or '').lower() not in ('utf-8', 'utf8'):
 from pptx.util import Emu, Inches
 from PPT_패치 import load, save, deploy, is_open, replace_text, _frames
 
-CHIP_IN = 0.34 * 2 / 3          # 헤더 액센트 칩 목표 크기 (원래 0.34의 2/3)
+CHIP_IN = 0.1135              # 헤더 액센트 칩 목표 크기 (원래 0.34의 1/3)
 
 
 # ── 개별 점검 항목 ──────────────────────────────────────────
@@ -31,7 +31,7 @@ def chk_chip(prs):
     for i, s in enumerate(prs.slides, 1):
         for sh in s.shapes:
             w, h = Emu(sh.width).inches, Emu(sh.height).inches
-            if abs(w - h) < 0.01 and 0.15 < w < 0.45 and abs(w - CHIP_IN) > 0.01:
+            if abs(w - h) < 0.01 and 0.08 < w < 0.45 and abs(w - CHIP_IN) > 0.005:
                 bad.append((i, sh))
             break_ = None
     return bad
