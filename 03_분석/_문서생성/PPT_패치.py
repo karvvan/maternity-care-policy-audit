@@ -160,6 +160,29 @@ def set_paragraph(prs, slide, shape_idx, para_idx, text):
         r.text = ''
 
 
+def insert_bullet_before(prs, anchor_text, new_text):
+    """anchor_text 를 담은 문단 바로 앞에 같은 서식의 문단을 하나 끼워 넣는다.
+
+    문단 XML을 통째로 복제하므로 글머리표·들여쓰기·글꼴이 그대로 유지된다.
+    문장을 기존 문단에 이어 붙이면 한 줄로 뭉치므로, 항목을 늘릴 때는 이 함수를 쓴다.
+    """
+    import copy
+    n = 0
+    for _, tf in _frames(prs):
+        for p in tf.paragraphs:
+            if anchor_text not in ''.join(r.text for r in p.runs):
+                continue
+            new_p = copy.deepcopy(p._p)
+            p._p.addprevious(new_p)
+            from pptx.text.text import _Paragraph
+            np = _Paragraph(new_p, p._parent)
+            np.runs[0].text = new_text
+            for r in np.runs[1:]:
+                r.text = ''
+            n += 1
+    return n
+
+
 def add_slide_at(prs, index):
     """빈 슬라이드를 만들어 index(0부터) 자리로 옮기고 돌려준다.
 
