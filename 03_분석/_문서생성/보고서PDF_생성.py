@@ -11,7 +11,7 @@
 사용법:
   python 보고서PDF_생성.py <md> <html> <title>
   이후 Edge headless --print-to-pdf 로 PDF 변환.
-자산 경로: ASSET_DIR(디자인 에셋 캐시), PHOTO_DIR(기본 05_팀운영/보고서_사진소스)
+자산 경로: ASSET_DIR(디자인 에셋 캐시), PHOTO_DIR(기본 05_작업자료/보고서_사진소스)
 """
 import sys, io, os, re, markdown
 
@@ -29,7 +29,7 @@ def _project_root(start):
 
 
 BASE = _project_root(__file__)
-PHOTO = os.environ.get('PHOTO_DIR') or os.path.join(BASE, '05_팀운영', '보고서_사진소스')
+PHOTO = os.environ.get('PHOTO_DIR') or os.path.join(BASE, '05_작업자료', '보고서_사진소스')
 
 import design_assets
 ASSETS = design_assets.build_defaults()
