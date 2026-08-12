@@ -8,3 +8,7 @@ desktop.ini
 Claude 시작.bat
 _assets/
 __pycache__/
+
+# 미리보기·백업 등 중간 산출물 (반영 여부 결정 전 임시본)
+*_미리보기.pptx
+*_반영직전_백업.pptx
