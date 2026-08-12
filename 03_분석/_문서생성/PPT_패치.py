@@ -160,6 +160,47 @@ def set_paragraph(prs, slide, shape_idx, para_idx, text):
         r.text = ''
 
 
+def add_slide_at(prs, index):
+    """빈 슬라이드를 만들어 index(0부터) 자리로 옮기고 돌려준다.
+
+    python-pptx에는 순서 변경 API가 없어 sldIdLst를 직접 다룬다.
+    기존 슬라이드는 그대로 두므로 사용자의 편집이 보존된다.
+    """
+    layout = prs.slide_layouts[6]          # 빈 레이아웃
+    s = prs.slides.add_slide(layout)
+    lst = prs.slides._sldIdLst
+    el = lst[-1]
+    lst.remove(el)
+    lst.insert(index, el)
+    return s
+
+
+def renumber_pages(prs, start_slide=2, first_no=3):
+    """슬라이드 우상단의 두 자리 쪽번호를 다시 매긴다 (슬라이드를 끼워 넣은 뒤 사용).
+
+    헤더가 그리는 번호 텍스트박스는 가로 11.85in 근처에 있고 내용이 숫자뿐이라 그것만 고른다.
+    start_slide는 0부터 센 인덱스, first_no는 그 슬라이드에 찍을 번호.
+    """
+    from pptx.util import Emu
+    n = first_no
+    changed = 0
+    for s in list(prs.slides)[start_slide:]:
+        for sh in s.shapes:
+            if not sh.has_text_frame:
+                continue
+            t = sh.text_frame.text.strip()
+            if t.isdigit() and len(t) <= 2 and Emu(sh.left).inches > 11.0:
+                p = sh.text_frame.paragraphs[0]
+                if p.runs:
+                    p.runs[0].text = f'{n:02d}'
+                    for r in p.runs[1:]:
+                        r.text = ''
+                    changed += 1
+                break
+        n += 1
+    return changed
+
+
 def dump(deck_or_prs):
     """슬라이드별 제목과 도형 수를 찍어 본다 — 패치 대상 찾을 때 쓴다."""
     prs = load(deck_or_prs) if isinstance(deck_or_prs, str) else deck_or_prs

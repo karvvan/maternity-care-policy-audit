@@ -24,7 +24,7 @@ sys.path.insert(0, os.path.join(BASE, '03_분석', '_문서생성'))        # de
 from pptx.util import Inches, Pt
 from pptx.dml.color import RGBColor
 from pptx.enum.text import MSO_ANCHOR
-from ppt_helpers import (new_deck, text_block, rect, card, header as _header, table, picture,
+from ppt_helpers import (new_deck, text_block, rect, card, header as _header, table, picture, toc as _toc,
                          bg, deco, glow, accent_chip,
                          NAVY, DARK, RED, GRAY, LIGHT, LINE, WHITE, REDBG, TEAL, BLUE)
 
@@ -79,6 +79,25 @@ glow(s, 1.02, 4.78, 6.4)
 text_block(s, 1.0, 5.1, 7.6, 0.34, [
     ('2026 제5회 명지대학교 창의적 SW프로그램 경진대회 · 빅데이터 분석 부문', 13.5, True, DARK, 0),
 ])
+
+# ── 2. 목차 ────────────────────────────────────────────────
+s = slide()
+_pageno[0] += 1
+_toc(s, [
+    ('Ⅰ. 배경', None, [
+        (3, '아이디어의 발단'), (4, '데이터 분석을 통한 네 가지 발견'), (5, '문제와 연구 질문')]),
+    ('Ⅱ. 제도 · 데이터 · 탐색', None, [
+        (6, '제도 이해 ① 판정 지표와 TRI'), (7, '제도 이해 ② 등급과 배분 관문'),
+        (8, '데이터와 전처리'), (9, 'EDA — 숨어 있던 92배 격차')]),
+    ('Ⅲ. 감사 I · 지정 단계', None, [
+        (10, '판정식 검증 — 99.4% 재현'), (11, '공급 공백형 사각지대'), (12, '"60분이면 되지 않나" 반론 대응')]),
+    ('Ⅳ. 감사 II · 배분 단계', None, [
+        (13, '등급이 지원을 가른다'), (14, '배분은 대부분 설명되지 않는다')]),
+    ('Ⅴ. 처방', None, [
+        (15, '① 우선순위 — 심도와 부담'), (16, '② 유형 배정'), (17, '③ 불일치 지도')]),
+    ('Ⅵ. 검증 · 제언 · 결론', None, [
+        (18, '모형을 스스로 공격했다'), (19, '정책 제언 5건'), (20, '한계와 재현성'), (21, '결론')]),
+], LABEL, note='발단·연구 질문의 상세한 배경과 분석 설계는 「데이터 분석 계획서」에서 다룬다.')
 
 # ── 2. 출발점(발단) ─────────────────────────────────────────
 s = slide()

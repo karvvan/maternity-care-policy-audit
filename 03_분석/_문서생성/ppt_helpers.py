@@ -225,6 +225,34 @@ def header(slide, no, title, footer_label, sub=None):
                  RGBColor(0xB2, 0xB5, 0xB9), 0)])
 
 
+def toc(slide, groups, footer_label, title='목차', note=None):
+    """목차 슬라이드. groups = [(부제목, 한줄설명, [(번호, 제목), ...]), ...] — 2열로 배치한다."""
+    bg(slide, 'main')
+    accent_chip(slide, 0.55, 0.52, 0.34, 0.34)
+    text_block(slide, 1.05, 0.3, 10.6, 0.75, [(title, 21.5, True, INK, 0)], anchor=MSO_ANCHOR.MIDDLE)
+    glow(slide, 0.57, 1.06, 4.6)
+    text_block(slide, 0.55, 7.1, 12.3, 0.35,
+               [(f'2026 명지대학교 창의적 SW프로그램 경진대회 · 빅데이터 분석 — {footer_label}', 8.5, False,
+                 RGBColor(0xB2, 0xB5, 0xB9), 0)])
+
+    half = (len(groups) + 1) // 2          # 왼쪽 열에 조금 더 많이 둔다
+    cols = [groups[:half], groups[half:]]
+    for ci, col in enumerate(cols):
+        y = 1.45
+        for gname, gnote, items in col:
+            h = 0.52 + 0.30 * len(items) + (0.22 if gnote else 0)
+            rect(slide, 0.55 + ci * 6.3, y, 6.05, h, LIGHT)
+            rows = [(gname, 13.5, True, NAVY, 3)]
+            if gnote:
+                rows.append((gnote, 10.5, False, GRAY, 4))
+            for no, t in items:
+                rows.append((f'{no:02d}   {t}', 11.5, False, DARK, 1.5))
+            text_block(slide, 0.75 + ci * 6.3, y + 0.13, 5.65, h - 0.26, rows)
+            y += h + 0.22
+    if note:
+        text_block(slide, 0.55, 6.62, 12.3, 0.42, [(note, 11.5, True, DARK, 0)])
+
+
 def table(slide, x, y, w, rows, widths=None, header_size=11.5, body_size=11, row_h=0.42,
           highlight_rows=(), highlight_color=None):
     shape = slide.shapes.add_table(len(rows), len(rows[0]), Inches(x), Inches(y), Inches(w), Inches(row_h * len(rows)))

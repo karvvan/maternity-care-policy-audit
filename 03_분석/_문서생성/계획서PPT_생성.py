@@ -24,7 +24,7 @@ sys.path.insert(0, os.path.join(BASE, '03_분석', '_문서생성'))        # de
 from pptx.util import Inches, Pt
 from pptx.dml.color import RGBColor
 from pptx.enum.text import MSO_ANCHOR
-from ppt_helpers import (new_deck, text_block, rect, card, header as _header, table,
+from ppt_helpers import (new_deck, text_block, rect, card, header as _header, table, toc as _toc,
                          bg, deco, glow, accent_chip,
                          NAVY, DARK, RED, GRAY, LIGHT, WHITE, REDBG)
 
@@ -78,6 +78,22 @@ text_block(s, 1.0, 5.1, 7.6, 1.7, [
     ('정부는 취약지를 정밀하게 측정한다. 지정 규칙과 배분 규칙은 그 측정을 따르는가 —', 12.5, False, GRAY, 2),
     ('정부 자신의 공개 데이터와 기준만으로 제도의 전 과정을 감사한다.', 12.5, False, GRAY, 0),
 ])
+
+# ── 2. 목차 ────────────────────────────────────────────────
+s = slide()
+_pageno[0] += 1
+_toc(s, [
+    ('Ⅰ. 문제 정의', '왜 이 주제이고, 무엇을 물을 것인가', [
+        (3, '아이디어의 발단'), (4, '문제 인식 — 세 단계 파이프라인'), (5, '연구 질문 (RQ 4개)')]),
+    ('Ⅱ. 배경 이해', '분석 전에 확정해야 할 이론과 제도', [
+        (6, '이론적 고찰 — 접근성의 두 축'), (7, '분석 대상 제도 — 지표·등급·배분')]),
+    ('Ⅲ. 데이터 계획', '무엇을 어떻게 모으고 검증할 것인가', [
+        (8, '데이터 수집 계획'), (9, '전처리·품질 관리 계획')]),
+    ('Ⅳ. 분석 설계', 'RQ별로 어떤 방법을 쓸 것인가', [
+        (10, '① 지정 감사 (RQ1·RQ2)'), (11, '② 배분 진단 (RQ3)'), (12, '③ 처방 모형 (RQ4)')]),
+    ('Ⅴ. 산출물과 일정', '무엇을 내놓고, 언제 할 것인가', [
+        (13, '기대 산출물과 활용 계획'), (14, '추진 일정과 역할 분담')]),
+], LABEL, note='본 계획서는 "왜·어떻게 할 것인가"를 다룬다. 실제 발견과 결과는 결과보고서에서 보고한다.')
 
 # ── 2. 출발점(발단) ─────────────────────────────────────────
 s = slide()
