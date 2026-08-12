@@ -37,6 +37,17 @@ if not os.path.isdir(FIG):
 OUT = os.environ.get('PPTX_OUT') or os.path.join(BASE, '05_작업자료', '_PPT생성본', '데이터분석_결과보고서.pptx')
 os.makedirs(os.path.dirname(OUT), exist_ok=True)
 
+# ── 안전장치: 제출본에는 어떤 경로로도 쓰지 못한다 ────────────
+# 04_제출물의 PPT는 사람이 직접 편집하는 원본이다. 생성기가 그 위에 쓰면 편집이 사라진다.
+# PPTX_OUT 으로도 우회할 수 없게 여기서 막는다. 반영은 PPT_패치.deploy() 로만 한다.
+_real = os.path.realpath(OUT)
+if os.path.realpath(os.path.join(BASE, '04_제출물')) == os.path.dirname(_real):
+    raise SystemExit(
+        '거부: 04_제출물의 제출본에는 생성기가 쓸 수 없습니다. '
+        '제출본은 사람이 편집하는 원본이라 덮어쓰면 편집이 사라집니다. '
+        'staging에 생성한 뒤 PPT_패치.deploy() 로 반영하세요.')
+
+
 prs, BLANK = new_deck()
 LABEL = '데이터 분석 결과보고서'
 

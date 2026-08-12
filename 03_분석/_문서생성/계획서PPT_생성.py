@@ -34,6 +34,17 @@ sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 OUT = os.environ.get('PPTX_OUT') or os.path.join(BASE, '05_작업자료', '_PPT생성본', '데이터분석_계획서.pptx')
 os.makedirs(os.path.dirname(OUT), exist_ok=True)
 
+# ── 안전장치: 제출본에는 어떤 경로로도 쓰지 못한다 ────────────
+# 04_제출물의 PPT는 사람이 직접 편집하는 원본이다. 생성기가 그 위에 쓰면 편집이 사라진다.
+# PPTX_OUT 으로도 우회할 수 없게 여기서 막는다. 반영은 PPT_패치.deploy() 로만 한다.
+_real = os.path.realpath(OUT)
+if os.path.realpath(os.path.join(BASE, '04_제출물')) == os.path.dirname(_real):
+    raise SystemExit(
+        '거부: 04_제출물의 제출본에는 생성기가 쓸 수 없습니다. '
+        '제출본은 사람이 편집하는 원본이라 덮어쓰면 편집이 사라집니다. '
+        'staging에 생성한 뒤 PPT_패치.deploy() 로 반영하세요.')
+
+
 prs, BLANK = new_deck()
 LABEL = '데이터 분석 계획서'
 
@@ -126,8 +137,8 @@ for i, (t, b) in enumerate(rqs):
     text_block(s, x + 0.35, y + 0.18, 5.55, 1.6,
                [(t, 15, True, NAVY, 5)] + [(line, 12, False, DARK, 2) for line in b.split('\n')])
 text_block(s, 0.55, 5.95, 12.3, 0.9, [
-    ('RQ1·2는 "지정 감사", RQ3·4는 "배분 감사·처방"으로 묶여 제도 파이프라인 전체를 관통한다.', 12.5, True, DARK, 3),
-    ('각 질문은 판단 기준을 분석 전에 명시해(사전 등록 성격) 사후 해석 시비를 차단한다.', 12, False, GRAY, 0),
+    ('RQ1·2는 지정을, RQ3·4는 배분을 본다. 앞의 둘로 "규칙이 무엇을 보는가"를 확정해야 뒤의 둘에서 "그 규칙대로 나눠지고 있는가"를 물을 수 있다.', 12.5, True, DARK, 3),
+    ('무엇을 "재현 성공"으로 볼지, 무엇을 "사각지대"로 볼지는 분석을 시작하기 전에 정해 둔다 — 결과를 보고 기준을 맞추지 않기 위해서다.', 12, False, GRAY, 0),
 ])
 
 # ── 5. 이론적 고찰 ──────────────────────────────────────────
