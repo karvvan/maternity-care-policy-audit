@@ -51,9 +51,28 @@ def _name(deck):
 
 
 def is_open(deck):
-    """PowerPoint가 그 파일을 열어 두었는지 — 오피스가 만드는 ~$ 잠금 파일로 판단한다."""
+    """그 파일에 지금 쓸 수 없는 상태인지 판정한다.
+
+    ~$ 잠금 파일만 보면 안 된다 — PowerPoint가 비정상 종료하면 잠금 파일이 남아
+    닫혀 있는데도 열린 것으로 오판한다(실제로 이 때문에 계획서 작업이 여러 번 건너뛰어졌다).
+    그래서 실제로 쓰기 모드로 열어 보는 것을 1차 판정으로 삼고, ~$ 는 참고만 한다.
+    """
+    path = os.path.join(SUBMIT, _name(deck))
+    if not os.path.exists(path):
+        return False
+    try:
+        with open(path, 'r+b'):        # 다른 프로세스가 잡고 있으면 PermissionError
+            return False
+    except PermissionError:
+        return True
+    except OSError:
+        return True
+
+
+def stale_lock(deck):
+    """쓸 수 있는데도 ~$ 잠금 파일이 남아 있는 상태 — 비정상 종료의 잔여물."""
     n = _name(deck)
-    return os.path.exists(os.path.join(SUBMIT, '~$' + n))
+    return os.path.exists(os.path.join(SUBMIT, '~$' + n)) and not is_open(deck)
 
 
 def load(deck):
