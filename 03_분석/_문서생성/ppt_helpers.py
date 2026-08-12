@@ -211,11 +211,20 @@ def card(slide, x, y, w, h, title, body, fill=LIGHT, tcolor=NAVY, tsize=13, bsiz
     text_block(slide, x + 0.2, y + 0.14, w - 0.4, h - 0.28, items)
 
 
-def header(slide, no, title, footer_label, sub=None):
-    """화이트 헤더: 액센트 칩 + 잉크 제목 + 글로우 바 + 페이지 번호"""
+def header(slide, no, title, footer_label, sub=None, tag=None):
+    """화이트 헤더: 목차 위치 표시 + 잉크 제목 + 글로우 바 + 페이지 번호
+
+    tag 를 주면 제목 앞에 'Ⅰ-1' 같은 목차 위치를 찍는다 (로마자 = 부, 아라비아 = 부 안의 순번).
+    tag 가 없으면 기존의 작은 액센트 칩을 쓴다.
+    """
     bg(slide, 'main')
-    accent_chip(slide, 0.663, 0.633, 0.114, 0.114)   # 원래 0.34의 1/3, 중심은 그대로
-    text_block(slide, 1.05, 0.3, 10.6, 0.75, [(title, 21.5, True, INK, 0)], anchor=MSO_ANCHOR.MIDDLE)
+    if tag:
+        text_block(slide, 0.55, 0.3, 1.0, 0.75,
+                   [(tag, 15, True, RGBColor(0x8A, 0x8F, 0x95), 0)], anchor=MSO_ANCHOR.MIDDLE)
+    else:
+        accent_chip(slide, 0.663, 0.633, 0.114, 0.114)   # 원래 0.34의 1/3, 중심은 그대로
+    text_block(slide, 1.55 if tag else 1.05, 0.3, 10.1 if tag else 10.6, 0.75,
+               [(title, 21.5, True, INK, 0)], anchor=MSO_ANCHOR.MIDDLE)
     glow(slide, 0.57, 1.06, 4.6)
     text_block(slide, 11.85, 0.18, 1.3, 0.85, [(f'{no:02d}', 30, True, RGBColor(0xD8, 0xDA, 0xDD), 0)])
     if sub:

@@ -52,6 +52,30 @@ TERMS = [('연구 질문', '핵심 질문'), ('본 연구의', '이 프로젝트
          ('연구의 한계', '분석의 한계'), ('연구 요약', '프로젝트 요약'),
          ('RQ1', 'Q1'), ('RQ2', 'Q2'), ('RQ3', 'Q3'), ('RQ4', 'Q4'), ('RQ', 'Q')]
 
+# 헤더에 찍혀야 하는 목차 위치 태그 (로마자-아라비아). 슬라이드 번호 → 태그
+TAGS = {
+    '결과': {3:'Ⅰ-1',4:'Ⅰ-2',5:'Ⅰ-3',6:'Ⅱ-1',7:'Ⅱ-2',8:'Ⅱ-3',9:'Ⅱ-4',
+             10:'Ⅲ-1',11:'Ⅲ-2',12:'Ⅲ-3',13:'Ⅳ-1',14:'Ⅳ-2',
+             15:'Ⅴ-1',16:'Ⅴ-2',17:'Ⅴ-3',18:'Ⅵ-1',19:'Ⅵ-2',20:'Ⅵ-3',21:'Ⅵ-4'},
+    '계획서': {3:'Ⅰ-1',4:'Ⅰ-2',5:'Ⅰ-3',6:'Ⅱ-1',7:'Ⅱ-2',8:'Ⅲ-1',9:'Ⅲ-2',
+               10:'Ⅳ-1',11:'Ⅳ-2',12:'Ⅳ-3',13:'Ⅴ-1',14:'Ⅴ-2'},
+}
+
+
+def chk_tags(prs, deck):
+    """각 슬라이드 헤더에 목차 위치 태그가 찍혀 있는가"""
+    want = TAGS.get(deck, {})
+    missing = []
+    for i, s in enumerate(prs.slides, 1):
+        t = want.get(i)
+        if not t:
+            continue
+        found = any(sh.has_text_frame and sh.text_frame.text.strip() == t for sh in s.shapes)
+        if not found:
+            missing.append(f'{i}({t})')
+    return missing
+
+
 # 반드시 남아 있어야 하는 문구 (없으면 사용자 저장에 덮여 사라진 것)
 MUST = {
     '결과': ['목차', '프로젝트 배경', '나눠 줄 것이 적을수록', '핵심 질문'],
@@ -74,6 +98,10 @@ def check(deck, apply=False):
         issues.append(f'헤더 칩이 원래 크기인 슬라이드 {len(bad)}개')
         if apply:
             fixed += fix_chip(prs, bad)
+
+    miss_tag = chk_tags(prs, deck)
+    if miss_tag:
+        issues.append(f'★ 목차 위치 태그 누락: {miss_tag} — 자동 복구 불가, 별도 패치 필요')
 
     stale = [a for a, _ in TERMS if a in b]
     if stale:

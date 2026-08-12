@@ -52,9 +52,17 @@ LABEL = '데이터 분석 계획서'
 _pageno = [1]   # 표지가 1번. 슬라이드를 중간에 끼워 넣어도 번호가 자동으로 밀린다
 
 
+# 슬라이드 번호 → 목차 위치 (로마자 = 부, 아라비아 = 부 안의 순번)
+TAG = {3: 'Ⅰ-1', 4: 'Ⅰ-2', 5: 'Ⅰ-3',
+       6: 'Ⅱ-1', 7: 'Ⅱ-2',
+       8: 'Ⅲ-1', 9: 'Ⅲ-2',
+       10: 'Ⅳ-1', 11: 'Ⅳ-2', 12: 'Ⅳ-3',
+       13: 'Ⅴ-1', 14: 'Ⅴ-2'}
+
+
 def header(s, title, sub=None):
     _pageno[0] += 1
-    _header(s, _pageno[0], title, LABEL, sub)
+    _header(s, _pageno[0], title, LABEL, sub, tag=TAG.get(_pageno[0]))
 
 
 def slide():
