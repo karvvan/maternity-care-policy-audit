@@ -29,7 +29,10 @@ from ppt_helpers import (new_deck, text_block, rect, card, header as _header, ta
                          NAVY, DARK, RED, GRAY, LIGHT, WHITE, REDBG)
 
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
-OUT = os.environ.get('PPTX_OUT') or os.path.join(BASE, '04_제출물', '데이터분석_계획서.pptx')
+# 주의: 04_제출물 의 제출본에 직접 쓰지 않는다. 사용자가 PowerPoint로 편집 중일 수 있다.
+#       생성 결과는 항상 staging(05_작업자료/_PPT생성본)에 두고, 반영 여부는 사용자가 정한다.
+OUT = os.environ.get('PPTX_OUT') or os.path.join(BASE, '05_작업자료', '_PPT생성본', '데이터분석_계획서.pptx')
+os.makedirs(os.path.dirname(OUT), exist_ok=True)
 
 prs, BLANK = new_deck()
 LABEL = '데이터 분석 계획서'
@@ -52,10 +55,11 @@ s = slide()
 bg(s, 'title')
 # 표지 오른쪽(가로 8.2인치~)은 사용자가 이미지·삽화를 직접 배치할 여백으로 비워 둔다
 accent_chip(s, 1.0, 1.32, 0.55, 0.14)
-text_block(s, 1.0, 1.62, 8.0, 3.1, [
+# 표지 문구·치수는 사용자가 PowerPoint에서 직접 고친 것을 그대로 옮긴 것이다 (임의로 되돌리지 말 것)
+text_block(s, 1.0, 1.62, 9.26, 1.93, [
     ('데이터 분석 계획서', 14.5, False, GRAY, 15),
-    ('측정과 배분 사이', 47, True, DARK, 8),
-    ('— 분만취약지 제도의 전 과정 데이터 감사와 우선순위 모형', 19, False, NAVY, 0),
+    ('분만취약지 지원제도 개선안', 47, True, DARK, 8),
+    ('분만취약지 지원 제도의 모든 절차 속 데이터 감사와 개선된 분석 모형 제안', 19, False, NAVY, 0),
 ])
 glow(s, 1.02, 4.78, 6.4)
 text_block(s, 1.0, 5.1, 7.6, 1.7, [
