@@ -34,7 +34,9 @@ LIGHT = RGBColor(0xF2, 0xF6, 0xFA)   # 마커: 흰 카드
 REDBG = RGBColor(0xFB, 0xF0, 0xEE)   # 마커: 회색 틴트 강조 카드
 LINE = RGBColor(0xE4, 0xE6, 0xE9)
 INK = DARK
-FONT = '맑은 고딕'
+# 심사 PC에 없을 수 있는 글꼴이다. 제출 전 PowerPoint에서
+# '파일 > 옵션 > 저장 > 파일에 글꼴 포함(모든 문자)'을 켜 둘 것.
+FONT = 'Pretendard'
 
 # 무채색 그라데이션 스톱
 _ACCENT1, _ACCENT2 = '3A3F45', '73787E'   # 액센트 칩 (차콜 → 중회색)
@@ -219,19 +221,21 @@ def header(slide, no, title, footer_label, sub=None, tag=None, part=None):
     """
     bg(slide, 'main')
     if tag:
-        # 목차 위치를 제목만 한 크기로 왼쪽에 세우고, 그 오른쪽에 부 이름(작게) + 제목(크게)을 쌓는다
-        text_block(slide, 0.55, 0.20, 1.15, 0.82,
+        # 목차 위치를 제목만 한 크기로 왼쪽에 세우고, 제목은 그 오른쪽, 부 이름은 맞은편 오른쪽 끝에.
+        # 셋 다 MIDDLE 정렬로 글자 중심을 0.71에 모은다 — TOP 정렬을 섞으면 수평선이 어긋난다.
+        text_block(slide, 0.55, 0.45, 1.15, 0.52,
                    [(tag, 22, True, RGBColor(0x5A, 0x5E, 0x64), 0)], anchor=MSO_ANCHOR.MIDDLE)
-        if part:
-            text_block(slide, 1.85, 0.20, 9.85, 0.24, [(part, 10.5, True, GRAY, 0)])
-        text_block(slide, 1.85, 0.44, 9.85, 0.58,
+        text_block(slide, 1.48, 0.42, 9.85, 0.58,
                    [(title, 21.5, True, INK, 0)], anchor=MSO_ANCHOR.MIDDLE)
+        if part:
+            text_block(slide, 11.70, 0.56, 1.55, 0.30,
+                       [(part, 10.5, True, GRAY, 0)], anchor=MSO_ANCHOR.MIDDLE)
     else:
         accent_chip(slide, 0.663, 0.633, 0.114, 0.114)
         text_block(slide, 1.05, 0.3, 10.6, 0.75,
                    [(title, 21.5, True, INK, 0)], anchor=MSO_ANCHOR.MIDDLE)
     glow(slide, 0.57, 1.06, 4.6)
-    text_block(slide, 11.85, 0.18, 1.3, 0.85, [(f'{no:02d}', 30, True, RGBColor(0xD8, 0xDA, 0xDD), 0)])
+    text_block(slide, 11.85, 0.18, 1.3, 0.38, [(f'{no:02d}', 20, True, RGBColor(0xD8, 0xDA, 0xDD), 0)])
     if sub:
         text_block(slide, 0.6, 1.2, 12.2, 0.42, [(sub, 12.5, False, GRAY, 0)])
     text_block(slide, 0.55, 7.1, 12.3, 0.35,
