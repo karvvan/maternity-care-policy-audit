@@ -1,5 +1,9 @@
 # 2026 제5회 명지대학교 창의적 SW프로그램 경진대회
 
+> 저장소: [`karvvan/mju2026-maternity-deserts-audit`](https://github.com/karvvan/mju2026-maternity-deserts-audit)
+> — `mju2026`(명지대 2026) · `maternity-deserts`(분만취약지) · `audit`(제도 감사).
+> 2026-08-15 에 `maternity-care-policy-audit` 에서 이름을 바꿨다. 옛 주소는 GitHub가 자동으로 넘겨준다.
+
 ## 참가 정보
 - **부문**: 빅데이터 분석
 - **팀 구성**: 2인 (대표자 + 팀원 1인)
